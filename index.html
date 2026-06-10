@@ -912,6 +912,9 @@
         <button id="menuInadimplencia" onclick="abrirTela('inadimplencia')">🚨 Inadimplência</button>
         <button id="menuContaAluno" onclick="abrirTela('contaAluno')">🧾 Conta do Aluno</button>
         <button id="menuTreinos" onclick="abrirTela('treinos')">🏋️ Treinos</button>
+        <button id="menuProdutos" onclick="abrirTela('produtos')">🛒 Produtos</button>
+        <button id="menuEstoque" onclick="abrirTela('estoque')">📦 Estoque</button>
+        <button id="menuVendas" onclick="abrirTela('vendas')">🧾 Vendas</button>
 
         <div class="admin-only-label admin-only">Administrador</div>
         <button id="menuFinanceiro" class="admin-only" onclick="abrirTela('financeiro')">💰 Financeiro</button>
@@ -941,7 +944,12 @@
       <section id="telaInadimplencia" class="hidden"></section>
       <section id="telaContaAluno" class="hidden"></section>
       <section id="telaTreinos" class="hidden"></section>
-      <section id="telaFinanceiro" class="hidden"></section>
+     <section id="telaProdutos" class="hidden"></section>
+     <section id="telaEstoque" class="hidden"></section>
+     <section id="telaVendas" class="hidden"></section>
+     <section id="telaFinanceiro" class="hidden"></section>
+      
+
       <section id="telaPlanos" class="hidden"></section>
     </main>
   </div>
@@ -972,7 +980,10 @@
     let alunosCache = [];
     let planosCache = [];
     let mensalidadesCache = [];
+    let produtosCache = [];
+    let carrinhoVenda = [];
     let telaAtual = "dashboard";
+    
 
     const BRL = new Intl.NumberFormat("pt-BR", {
       style: "currency",
@@ -1122,17 +1133,20 @@
     }
 
     function esconderTelas() {
-      [
-        "telaDashboard",
-        "telaAlunos",
-        "telaMensalidades",
-        "telaInadimplencia",
-        "telaContaAluno",
-        "telaTreinos",
-        "telaFinanceiro",
-        "telaPlanos"
-      ].forEach(id => document.getElementById(id).classList.add("hidden"));
-    }
+  [
+    "telaDashboard",
+    "telaAlunos",
+    "telaMensalidades",
+    "telaInadimplencia",
+    "telaContaAluno",
+    "telaTreinos",
+    "telaProdutos",
+    "telaEstoque",
+    "telaVendas",
+    "telaFinanceiro",
+    "telaPlanos"
+  ].forEach(id => document.getElementById(id).classList.add("hidden"));
+ }
 
     async function abrirTela(tela) {
       if ((tela === "financeiro" || tela === "planos") && !usuarioEhAdmin()) {
@@ -1187,6 +1201,26 @@
         setTitulo("Treinos", "Fichas de treino com acesso por senha");
         await renderTreinos();
       }
+      if (tela === "produtos") {
+      document.getElementById("telaProdutos").classList.remove("hidden");
+      document.getElementById("menuProdutos").classList.add("active");
+      setTitulo("Produtos", "Cadastro de suplementos, alimentos e acessórios");
+      await renderProdutos();
+      }
+
+      if (tela === "estoque") {
+      document.getElementById("telaEstoque").classList.remove("hidden");
+      document.getElementById("menuEstoque").classList.add("active");
+      setTitulo("Estoque", "Entrada, saída, ajuste e alerta de estoque baixo");
+      await renderEstoque();
+      }
+
+      if (tela === "vendas") {
+      document.getElementById("telaVendas").classList.remove("hidden");
+      document.getElementById("menuVendas").classList.add("active");
+      setTitulo("Vendas", "Venda paga na hora ou anotada na conta do aluno");
+      await renderVendas();
+      }
 
       if (tela === "financeiro") {
         document.getElementById("telaFinanceiro").classList.remove("hidden");
@@ -1204,27 +1238,41 @@
     }
 
     async function carregarBase() {
-      const planosReq = client.from("planos").select("*").order("valor", { ascending: true });
-      const alunosReq = client.from("alunos").select("*, planos(nome)").order("criado_em", { ascending: false });
-      const mensalidadesReq = client
-        .from("mensalidades")
-        .select("*, alunos(codigo,nome,telefone), planos(nome)")
-        .order("data_vencimento", { ascending: false });
+  const planosReq = client.from("planos").select("*").order("valor", { ascending: true });
 
-      const [planosRes, alunosRes, mensalidadesRes] = await Promise.all([
-        planosReq,
-        alunosReq,
-        mensalidadesReq
-      ]);
+  const alunosReq = client
+    .from("alunos")
+    .select("*, planos(nome)")
+    .eq("ativo", true)
+    .order("criado_em", { ascending: false });
 
-      if (planosRes.error) mostrarToast("Erro ao carregar planos: " + planosRes.error.message, "error");
-      if (alunosRes.error) mostrarToast("Erro ao carregar alunos: " + alunosRes.error.message, "error");
-      if (mensalidadesRes.error) mostrarToast("Erro ao carregar mensalidades: " + mensalidadesRes.error.message, "error");
+  const mensalidadesReq = client
+    .from("mensalidades")
+    .select("*, alunos(codigo,nome,telefone), planos(nome)")
+    .order("data_vencimento", { ascending: false });
 
-      planosCache = planosRes.data || [];
-      alunosCache = alunosRes.data || [];
-      mensalidadesCache = mensalidadesRes.data || [];
-    }
+  const produtosReq = client
+    .from("produtos")
+    .select("*")
+    .order("nome", { ascending: true });
+
+  const [planosRes, alunosRes, mensalidadesRes, produtosRes] = await Promise.all([
+    planosReq,
+    alunosReq,
+    mensalidadesReq,
+    produtosReq
+  ]);
+
+  if (planosRes.error) mostrarToast("Erro ao carregar planos: " + planosRes.error.message, "error");
+  if (alunosRes.error) mostrarToast("Erro ao carregar alunos: " + alunosRes.error.message, "error");
+  if (mensalidadesRes.error) mostrarToast("Erro ao carregar mensalidades: " + mensalidadesRes.error.message, "error");
+  if (produtosRes.error) mostrarToast("Erro ao carregar produtos: " + produtosRes.error.message, "error");
+
+  planosCache = planosRes.data || [];
+  alunosCache = alunosRes.data || [];
+  mensalidadesCache = mensalidadesRes.data || [];
+  produtosCache = produtosRes.data || [];
+ }
 
     async function atualizarMensalidadesVencidas() {
       await client.rpc("atualizar_mensalidades_vencidas");
@@ -1236,6 +1284,14 @@
       const totalAlunos = alunosCache.filter(a => a.ativo).length;
       const atrasados = mensalidadesCache.filter(m => m.status === "Vencido").length;
       const pendentes = mensalidadesCache.filter(m => m.status === "Pendente").length;
+      const produtosBaixo = produtosCache.filter(p =>
+  p.ativo !== false &&
+  Number(p.quantidade_estoque || 0) <= Number(p.estoque_minimo || 0)
+).length;
+      const produtosBaixo = produtosCache.filter(p =>
+     p.ativo !== false &&
+     Number(p.quantidade_estoque || 0) <= Number(p.estoque_minimo || 0)
+     ).length;
 
       let faturamentoMes = 0;
 
@@ -1262,25 +1318,30 @@
         `
         : "";
 
-      const html = `
-        <div class="cards">
-          <div class="card">
-            <div class="kpi-label">Alunos cadastrados</div>
-            <div class="kpi-value">${totalAlunos}</div>
-          </div>
+     const html = `
+  <div class="cards">
+    <div class="card">
+      <div class="kpi-label">Alunos cadastrados</div>
+      <div class="kpi-value">${totalAlunos}</div>
+    </div>
 
-          <div class="card red">
-            <div class="kpi-label">Mensalidades vencidas</div>
-            <div class="kpi-value">${atrasados}</div>
-          </div>
+    <div class="card red">
+      <div class="kpi-label">Mensalidades vencidas</div>
+      <div class="kpi-value">${atrasados}</div>
+    </div>
 
-          <div class="card yellow">
-            <div class="kpi-label">Mensalidades pendentes</div>
-            <div class="kpi-value">${pendentes}</div>
-          </div>
+    <div class="card yellow">
+      <div class="kpi-label">Mensalidades pendentes</div>
+      <div class="kpi-value">${pendentes}</div>
+    </div>
 
-          ${cardFinanceiro}
-        </div>
+    <div class="card red">
+      <div class="kpi-label">Produtos com estoque baixo</div>
+      <div class="kpi-value">${produtosBaixo}</div>
+    </div>
+
+    ${cardFinanceiro}
+  </div>
 
         <div class="grid-2">
           <div class="panel">
@@ -2930,6 +2991,879 @@
       document.getElementById("publicTreinoConteudo").classList.remove("hidden");
       document.getElementById("publicTreinoConteudo").innerHTML = html;
     }
+    // ============================================================
+// FASE 2 - PRODUTOS
+// ============================================================
+
+async function renderProdutos() {
+  await carregarBase();
+
+  const ativos = produtosCache.filter(p => p.ativo !== false);
+  const estoqueBaixo = ativos.filter(p => Number(p.quantidade_estoque || 0) <= Number(p.estoque_minimo || 0));
+
+  const html = `
+    <div class="cards">
+      <div class="card">
+        <div class="kpi-label">Produtos ativos</div>
+        <div class="kpi-value">${ativos.length}</div>
+      </div>
+
+      <div class="card yellow">
+        <div class="kpi-label">Estoque baixo</div>
+        <div class="kpi-value">${estoqueBaixo.length}</div>
+      </div>
+
+      <div class="card green">
+        <div class="kpi-label">Itens em estoque</div>
+        <div class="kpi-value">${ativos.reduce((s, p) => s + Number(p.quantidade_estoque || 0), 0)}</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Produtos cadastrados</h2>
+          <p>Busque por nome, categoria ou código de barras</p>
+        </div>
+        <button class="btn btn-primary" onclick="abrirModalProduto()">+ Novo produto</button>
+      </div>
+
+      <div class="toolbar">
+        <input id="buscaProduto" placeholder="Buscar produto..." oninput="filtrarProdutos()" />
+        <select id="filtroCategoriaProduto" onchange="filtrarProdutos()">
+          <option value="">Todas as categorias</option>
+          <option>Whey Protein</option>
+          <option>Creatina</option>
+          <option>Pré-treino</option>
+          <option>Barrinhas</option>
+          <option>Café</option>
+          <option>Água</option>
+          <option>Energéticos</option>
+          <option>Camisetas</option>
+          <option>Acessórios</option>
+          <option>Outros</option>
+        </select>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Código barras</th>
+              <th>Produto</th>
+              <th>Categoria</th>
+              <th>Preço</th>
+              <th>Estoque</th>
+              <th>Mínimo</th>
+              <th>Status</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="tbodyProdutos"></tbody>
+        </table>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("telaProdutos").innerHTML = html;
+  filtrarProdutos();
+}
+
+function filtrarProdutos() {
+  const busca = (document.getElementById("buscaProduto")?.value || "").toLowerCase();
+  const categoria = document.getElementById("filtroCategoriaProduto")?.value || "";
+
+  const lista = produtosCache.filter(p => {
+    const texto = `${p.codigo_barras || ""} ${p.nome || ""} ${p.categoria || ""}`.toLowerCase();
+    const okBusca = texto.includes(busca);
+    const okCategoria = !categoria || p.categoria === categoria;
+    return okBusca && okCategoria;
+  });
+
+  const tbody = document.getElementById("tbodyProdutos");
+  if (!tbody) return;
+
+  if (!lista.length) {
+    tbody.innerHTML = `<tr><td colspan="8">Nenhum produto encontrado.</td></tr>`;
+    return;
+  }
+
+  tbody.innerHTML = lista.map(p => {
+    const baixo = Number(p.quantidade_estoque || 0) <= Number(p.estoque_minimo || 0);
+
+    return `
+      <tr>
+        <td>${p.codigo_barras || "-"}</td>
+        <td>
+          <strong>${p.nome}</strong>
+          ${p.descricao ? `<br><span style="color:var(--muted);font-size:12px;">${p.descricao}</span>` : ""}
+        </td>
+        <td>${p.categoria || "-"}</td>
+        <td>${BRL.format(Number(p.preco_venda || 0))}</td>
+        <td>${baixo ? `<span class="badge red">${p.quantidade_estoque}</span>` : `<span class="badge green">${p.quantidade_estoque}</span>`}</td>
+        <td>${p.estoque_minimo || 0}</td>
+        <td>${p.ativo ? `<span class="badge green">Ativo</span>` : `<span class="badge gray">Inativo</span>`}</td>
+        <td>
+          <div class="actions">
+            <button class="btn btn-small btn-yellow" onclick="abrirModalProduto('${p.id}')">Editar</button>
+            <button class="btn btn-small btn-blue" onclick="abrirModalMovimentacaoProduto('${p.id}')">Estoque</button>
+          </div>
+        </td>
+      </tr>
+    `;
+  }).join("");
+}
+
+function abrirModalProduto(id = null) {
+  const p = id ? produtosCache.find(x => x.id === id) : null;
+
+  const categorias = [
+    "Whey Protein",
+    "Creatina",
+    "Pré-treino",
+    "Barrinhas",
+    "Café",
+    "Água",
+    "Energéticos",
+    "Camisetas",
+    "Acessórios",
+    "Outros"
+  ];
+
+  const html = `
+    <form onsubmit="salvarProduto(event, '${id || ""}')">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Código de barras</label>
+          <input id="produtoCodigoBarras" value="${p?.codigo_barras || ""}" placeholder="Pode ser lido pelo leitor" />
+        </div>
+
+        <div class="form-group span-2">
+          <label>Nome do produto</label>
+          <input id="produtoNome" required value="${p?.nome || ""}" placeholder="Ex: Whey Protein 900g" />
+        </div>
+
+        <div class="form-group">
+          <label>Categoria</label>
+          <select id="produtoCategoria">
+            ${categorias.map(c => `<option ${p?.categoria === c ? "selected" : ""}>${c}</option>`).join("")}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Preço de venda</label>
+          <input id="produtoPreco" type="number" step="0.01" required value="${p?.preco_venda || ""}" />
+        </div>
+
+        <div class="form-group">
+          <label>Quantidade em estoque</label>
+          <input id="produtoEstoque" type="number" min="0" required value="${p?.quantidade_estoque ?? 0}" />
+        </div>
+
+        <div class="form-group">
+          <label>Estoque mínimo</label>
+          <input id="produtoMinimo" type="number" min="0" required value="${p?.estoque_minimo ?? 0}" />
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select id="produtoAtivo">
+            <option value="true" ${p?.ativo !== false ? "selected" : ""}>Ativo</option>
+            <option value="false" ${p?.ativo === false ? "selected" : ""}>Inativo</option>
+          </select>
+        </div>
+
+        <div class="form-group span-3">
+          <label>Descrição</label>
+          <textarea id="produtoDescricao">${p?.descricao || ""}</textarea>
+        </div>
+      </div>
+
+      <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+        <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar produto</button>
+      </div>
+    </form>
+  `;
+
+  abrirModal(id ? "Editar produto" : "Novo produto", "Cadastro de produto vendido na academia", html);
+}
+
+async function salvarProduto(event, id) {
+  event.preventDefault();
+
+  const payload = {
+    codigo_barras: document.getElementById("produtoCodigoBarras").value.trim() || null,
+    nome: document.getElementById("produtoNome").value.trim(),
+    categoria: document.getElementById("produtoCategoria").value,
+    descricao: document.getElementById("produtoDescricao").value.trim(),
+    preco_venda: Number(document.getElementById("produtoPreco").value || 0),
+    quantidade_estoque: Number(document.getElementById("produtoEstoque").value || 0),
+    estoque_minimo: Number(document.getElementById("produtoMinimo").value || 0),
+    ativo: document.getElementById("produtoAtivo").value === "true",
+    atualizado_em: new Date().toISOString()
+  };
+
+  let res;
+
+  if (id) {
+    res = await client.from("produtos").update(payload).eq("id", id);
+  } else {
+    res = await client.from("produtos").insert(payload);
+  }
+
+  if (res.error) {
+    mostrarToast("Erro ao salvar produto: " + res.error.message, "error");
+    return;
+  }
+
+  fecharModal();
+  await carregarBase();
+  await abrirTela("produtos");
+  mostrarToast("Produto salvo com sucesso.");
+}
+
+// ============================================================
+// FASE 2 - ESTOQUE
+// ============================================================
+
+async function renderEstoque() {
+  await carregarBase();
+
+  const { data: movimentos } = await client
+    .from("movimentacoes_estoque")
+    .select("*, produtos(nome)")
+    .order("criado_em", { ascending: false })
+    .limit(80);
+
+  const estoqueBaixo = produtosCache.filter(p =>
+    p.ativo !== false &&
+    Number(p.quantidade_estoque || 0) <= Number(p.estoque_minimo || 0)
+  );
+
+  const html = `
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Alerta de estoque baixo</h2>
+            <p>Produtos abaixo ou igual ao estoque mínimo</p>
+          </div>
+        </div>
+
+        ${
+          estoqueBaixo.length
+            ? `<div class="debt-list">
+                ${estoqueBaixo.map(p => `
+                  <div class="debt-item">
+                    <div>
+                      <strong>${p.nome}</strong>
+                      <span>${p.categoria || "-"} | Mínimo: ${p.estoque_minimo}</span>
+                    </div>
+                    <strong style="color:#ff9fa6;">${p.quantidade_estoque}</strong>
+                  </div>
+                `).join("")}
+              </div>`
+            : `<div class="empty">Nenhum produto com estoque baixo.</div>`
+        }
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Movimentar estoque</h2>
+            <p>Entrada, saída manual ou ajuste</p>
+          </div>
+          <button class="btn btn-primary" onclick="abrirModalMovimentacaoProduto()">+ Movimentar</button>
+        </div>
+
+        <div class="empty">
+          Use entrada para reposição, saída para perda/retirada e ajuste para corrigir quantidade.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Histórico de movimentações</h2>
+          <p>Últimos registros de estoque</p>
+        </div>
+      </div>
+
+      ${
+        movimentos?.length
+          ? `
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Produto</th>
+                    <th>Tipo</th>
+                    <th>Qtd</th>
+                    <th>Anterior</th>
+                    <th>Atual</th>
+                    <th>Observação</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${movimentos.map(m => `
+                    <tr>
+                      <td>${new Date(m.criado_em).toLocaleString("pt-BR")}</td>
+                      <td>${m.produtos?.nome || "-"}</td>
+                      <td>${badgeTipoEstoque(m.tipo)}</td>
+                      <td>${m.quantidade}</td>
+                      <td>${m.estoque_anterior ?? "-"}</td>
+                      <td>${m.estoque_atual ?? "-"}</td>
+                      <td>${m.observacao || "-"}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `
+          : `<div class="empty">Nenhuma movimentação registrada.</div>`
+      }
+    </div>
+  `;
+
+  document.getElementById("telaEstoque").innerHTML = html;
+}
+
+function badgeTipoEstoque(tipo) {
+  if (tipo === "Entrada") return `<span class="badge green">Entrada</span>`;
+  if (tipo === "Saída") return `<span class="badge red">Saída</span>`;
+  if (tipo === "Venda") return `<span class="badge yellow">Venda</span>`;
+  if (tipo === "Ajuste") return `<span class="badge gray">Ajuste</span>`;
+  return `<span class="badge gray">${tipo}</span>`;
+}
+
+function abrirModalMovimentacaoProduto(produtoId = "") {
+  const produtoOptions = produtosCache.filter(p => p.ativo !== false).map(p => `
+    <option value="${p.id}" ${produtoId === p.id ? "selected" : ""}>
+      ${p.nome} | Estoque: ${p.quantidade_estoque}
+    </option>
+  `).join("");
+
+  const html = `
+    <form onsubmit="salvarMovimentacaoEstoque(event)">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Produto</label>
+          <select id="movProduto" required>
+            <option value="">Selecione</option>
+            ${produtoOptions}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Tipo</label>
+          <select id="movTipo" required>
+            <option>Entrada</option>
+            <option>Saída</option>
+            <option>Ajuste</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Quantidade</label>
+          <input id="movQuantidade" type="number" min="1" required />
+        </div>
+
+        <div class="form-group span-2">
+          <label>Observação</label>
+          <input id="movObs" placeholder="Ex: Compra para reposição" />
+        </div>
+      </div>
+
+      <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+        <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar movimentação</button>
+      </div>
+    </form>
+  `;
+
+  abrirModal("Movimentar estoque", "Entrada, saída ou ajuste de produto", html, true);
+}
+
+async function salvarMovimentacaoEstoque(event) {
+  event.preventDefault();
+
+  const produtoId = document.getElementById("movProduto").value;
+  const tipo = document.getElementById("movTipo").value;
+  const qtd = Number(document.getElementById("movQuantidade").value || 0);
+  const obs = document.getElementById("movObs").value.trim();
+
+  const produto = produtosCache.find(p => p.id === produtoId);
+  if (!produto) {
+    mostrarToast("Produto não encontrado.", "error");
+    return;
+  }
+
+  const estoqueAnterior = Number(produto.quantidade_estoque || 0);
+  let estoqueAtual = estoqueAnterior;
+
+  if (tipo === "Entrada") estoqueAtual = estoqueAnterior + qtd;
+  if (tipo === "Saída") estoqueAtual = estoqueAnterior - qtd;
+  if (tipo === "Ajuste") estoqueAtual = qtd;
+
+  if (estoqueAtual < 0) {
+    mostrarToast("Estoque não pode ficar negativo.", "error");
+    return;
+  }
+
+  const { error: erroProduto } = await client
+    .from("produtos")
+    .update({
+      quantidade_estoque: estoqueAtual,
+      atualizado_em: new Date().toISOString()
+    })
+    .eq("id", produtoId);
+
+  if (erroProduto) {
+    mostrarToast("Erro ao atualizar produto: " + erroProduto.message, "error");
+    return;
+  }
+
+  const { error: erroMov } = await client.from("movimentacoes_estoque").insert({
+    produto_id: produtoId,
+    tipo,
+    quantidade: qtd,
+    estoque_anterior: estoqueAnterior,
+    estoque_atual: estoqueAtual,
+    observacao: obs,
+    usuario_id: usuarioLogado.id
+  });
+
+  if (erroMov) {
+    mostrarToast("Erro ao registrar movimentação: " + erroMov.message, "error");
+    return;
+  }
+
+  fecharModal();
+  await carregarBase();
+  await abrirTela("estoque");
+  mostrarToast("Estoque atualizado.");
+}
+
+// ============================================================
+// FASE 2 - VENDAS
+// ============================================================
+
+async function renderVendas() {
+  await carregarBase();
+  carrinhoVenda = [];
+
+  const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+    <option value="${a.id}">${a.codigo} - ${a.nome}</option>
+  `).join("");
+
+  const { data: vendas } = await client
+    .from("vendas")
+    .select("*, alunos(codigo,nome)")
+    .order("criado_em", { ascending: false })
+    .limit(50);
+
+  const html = `
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Nova venda</h2>
+            <p>Venda paga na hora ou anotada na conta do aluno</p>
+          </div>
+        </div>
+
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Tipo de venda</label>
+            <select id="vendaTipo" onchange="ajustarTipoVenda()">
+              <option>Paga na Hora</option>
+              <option>Anotada na Conta</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Aluno</label>
+            <select id="vendaAluno">
+              <option value="">Cliente avulso / sem aluno</option>
+              ${alunoOptions}
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label>Forma de pagamento</label>
+            <select id="vendaForma">
+              <option>PIX</option>
+              <option>Cartão de Crédito</option>
+              <option>Cartão de Débito</option>
+              <option>Dinheiro</option>
+              <option>Swile</option>
+            </select>
+          </div>
+
+          <div class="form-group span-3">
+            <label>Cliente avulso</label>
+            <input id="vendaClienteAvulso" placeholder="Nome do cliente, caso não seja aluno cadastrado" />
+          </div>
+        </div>
+
+        <hr style="border:0;border-top:1px solid var(--line);margin:16px 0;">
+
+        <div class="form-grid">
+          <div class="form-group span-2">
+            <label>Produto / código de barras</label>
+            <input id="vendaBuscaProduto" placeholder="Digite nome ou passe o código de barras" onkeydown="atalhoCodigoBarrasVenda(event)" />
+          </div>
+
+          <div class="form-group">
+            <label>Quantidade</label>
+            <input id="vendaQtdProduto" type="number" min="1" value="1" />
+          </div>
+
+          <div class="form-group span-3">
+            <button class="btn btn-primary full" onclick="adicionarProdutoVenda()">+ Adicionar produto</button>
+          </div>
+        </div>
+
+        <div id="resultadoBuscaVenda" style="margin-top:12px;"></div>
+      </div>
+
+      <div class="panel">
+        <div class="panel-header">
+          <div>
+            <h2>Carrinho</h2>
+            <p>Itens da venda atual</p>
+          </div>
+        </div>
+
+        <div id="carrinhoVendaBox" class="empty">Nenhum item adicionado.</div>
+
+        <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+          <button class="btn btn-ghost" onclick="limparCarrinhoVenda()">Limpar</button>
+          <button class="btn btn-green" onclick="finalizarVenda()">Finalizar venda</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Últimas vendas</h2>
+          <p>Histórico recente de vendas</p>
+        </div>
+      </div>
+
+      ${
+        vendas?.length
+          ? `
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Aluno/Cliente</th>
+                    <th>Tipo</th>
+                    <th>Forma</th>
+                    <th>Total</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${vendas.map(v => `
+                    <tr>
+                      <td>${new Date(v.criado_em).toLocaleString("pt-BR")}</td>
+                      <td>${v.alunos?.nome || v.cliente_nome || "Cliente avulso"}</td>
+                      <td>${v.tipo_venda}</td>
+                      <td>${v.forma_pagamento || "-"}</td>
+                      <td>${BRL.format(Number(v.valor_total || 0))}</td>
+                      <td>${v.status}</td>
+                    </tr>
+                  `).join("")}
+                </tbody>
+              </table>
+            </div>
+          `
+          : `<div class="empty">Nenhuma venda registrada.</div>`
+      }
+    </div>
+  `;
+
+  document.getElementById("telaVendas").innerHTML = html;
+  ajustarTipoVenda();
+  renderCarrinhoVenda();
+}
+
+function ajustarTipoVenda() {
+  const tipo = document.getElementById("vendaTipo")?.value;
+  const aluno = document.getElementById("vendaAluno");
+  const forma = document.getElementById("vendaForma");
+  const avulso = document.getElementById("vendaClienteAvulso");
+
+  if (!aluno || !forma || !avulso) return;
+
+  if (tipo === "Anotada na Conta") {
+    aluno.querySelector('option[value=""]').disabled = true;
+    forma.disabled = true;
+    avulso.disabled = true;
+    avulso.value = "";
+  } else {
+    aluno.querySelector('option[value=""]').disabled = false;
+    forma.disabled = false;
+    avulso.disabled = false;
+  }
+}
+
+function atalhoCodigoBarrasVenda(event) {
+  if (event.key === "Enter") {
+    event.preventDefault();
+    adicionarProdutoVenda();
+  }
+}
+
+function encontrarProdutoVenda(texto) {
+  const termo = String(texto || "").trim().toLowerCase();
+
+  if (!termo) return null;
+
+  let produto = produtosCache.find(p =>
+    String(p.codigo_barras || "").toLowerCase() === termo &&
+    p.ativo !== false
+  );
+
+  if (produto) return produto;
+
+  produto = produtosCache.find(p =>
+    String(p.nome || "").toLowerCase().includes(termo) &&
+    p.ativo !== false
+  );
+
+  return produto || null;
+}
+
+function adicionarProdutoVenda() {
+  const busca = document.getElementById("vendaBuscaProduto").value.trim();
+  const qtd = Number(document.getElementById("vendaQtdProduto").value || 1);
+
+  const produto = encontrarProdutoVenda(busca);
+
+  if (!produto) {
+    mostrarToast("Produto não encontrado.", "error");
+    return;
+  }
+
+  if (qtd <= 0) {
+    mostrarToast("Quantidade inválida.", "error");
+    return;
+  }
+
+  if (Number(produto.quantidade_estoque || 0) < qtd) {
+    mostrarToast("Estoque insuficiente para este produto.", "error");
+    return;
+  }
+
+  const existente = carrinhoVenda.find(i => i.produto_id === produto.id);
+
+  if (existente) {
+    const novaQtd = existente.quantidade + qtd;
+
+    if (Number(produto.quantidade_estoque || 0) < novaQtd) {
+      mostrarToast("Estoque insuficiente para esta quantidade.", "error");
+      return;
+    }
+
+    existente.quantidade = novaQtd;
+    existente.valor_total = existente.quantidade * existente.valor_unitario;
+  } else {
+    carrinhoVenda.push({
+      produto_id: produto.id,
+      produto_nome: produto.nome,
+      quantidade: qtd,
+      valor_unitario: Number(produto.preco_venda || 0),
+      valor_total: qtd * Number(produto.preco_venda || 0),
+      estoque_atual: Number(produto.quantidade_estoque || 0)
+    });
+  }
+
+  document.getElementById("vendaBuscaProduto").value = "";
+  document.getElementById("vendaQtdProduto").value = 1;
+  renderCarrinhoVenda();
+  mostrarToast("Produto adicionado.");
+}
+
+function renderCarrinhoVenda() {
+  const box = document.getElementById("carrinhoVendaBox");
+  if (!box) return;
+
+  if (!carrinhoVenda.length) {
+    box.className = "empty";
+    box.innerHTML = "Nenhum item adicionado.";
+    return;
+  }
+
+  const total = carrinhoVenda.reduce((s, i) => s + Number(i.valor_total || 0), 0);
+
+  box.className = "";
+  box.innerHTML = `
+    <div class="debt-list">
+      ${carrinhoVenda.map((i, index) => `
+        <div class="debt-item">
+          <div>
+            <strong>${i.produto_nome}</strong>
+            <span>Qtd: ${i.quantidade} | Unitário: ${BRL.format(i.valor_unitario)}</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+            <strong>${BRL.format(i.valor_total)}</strong>
+            <button class="btn btn-small btn-danger" onclick="removerItemCarrinho(${index})">Remover</button>
+          </div>
+        </div>
+      `).join("")}
+    </div>
+
+    <div class="total-box">
+      <span>Total da venda</span>
+      <strong>${BRL.format(total)}</strong>
+    </div>
+  `;
+}
+
+function removerItemCarrinho(index) {
+  carrinhoVenda.splice(index, 1);
+  renderCarrinhoVenda();
+}
+
+function limparCarrinhoVenda() {
+  carrinhoVenda = [];
+  renderCarrinhoVenda();
+}
+
+async function finalizarVenda() {
+  const tipo = document.getElementById("vendaTipo").value;
+  const alunoId = document.getElementById("vendaAluno").value || null;
+  const forma = document.getElementById("vendaForma").value;
+  const clienteNome = document.getElementById("vendaClienteAvulso").value.trim();
+
+  if (!carrinhoVenda.length) {
+    mostrarToast("Adicione pelo menos um produto.", "error");
+    return;
+  }
+
+  if (tipo === "Anotada na Conta" && !alunoId) {
+    mostrarToast("Venda anotada só pode ser feita para aluno cadastrado.", "error");
+    return;
+  }
+
+  const total = carrinhoVenda.reduce((s, i) => s + Number(i.valor_total || 0), 0);
+
+  for (const item of carrinhoVenda) {
+    const produto = produtosCache.find(p => p.id === item.produto_id);
+
+    if (!produto || Number(produto.quantidade_estoque || 0) < item.quantidade) {
+      mostrarToast(`Estoque insuficiente para ${item.produto_nome}.`, "error");
+      return;
+    }
+  }
+
+  const { data: venda, error: erroVenda } = await client
+    .from("vendas")
+    .insert({
+      aluno_id: alunoId,
+      cliente_nome: clienteNome || null,
+      tipo_venda: tipo,
+      forma_pagamento: tipo === "Paga na Hora" ? forma : null,
+      valor_total: total,
+      status: tipo === "Paga na Hora" ? "Concluída" : "Pendente",
+      usuario_id: usuarioLogado.id
+    })
+    .select()
+    .single();
+
+  if (erroVenda) {
+    mostrarToast("Erro ao criar venda: " + erroVenda.message, "error");
+    return;
+  }
+
+  for (const item of carrinhoVenda) {
+    await client.from("venda_itens").insert({
+      venda_id: venda.id,
+      produto_id: item.produto_id,
+      produto_nome: item.produto_nome,
+      quantidade: item.quantidade,
+      valor_unitario: item.valor_unitario,
+      valor_total: item.valor_total
+    });
+
+    const produto = produtosCache.find(p => p.id === item.produto_id);
+    const estoqueAnterior = Number(produto.quantidade_estoque || 0);
+    const estoqueAtual = estoqueAnterior - item.quantidade;
+
+    await client
+      .from("produtos")
+      .update({
+        quantidade_estoque: estoqueAtual,
+        atualizado_em: new Date().toISOString()
+      })
+      .eq("id", item.produto_id);
+
+    await client.from("movimentacoes_estoque").insert({
+      produto_id: item.produto_id,
+      tipo: "Venda",
+      quantidade: item.quantidade,
+      estoque_anterior: estoqueAnterior,
+      estoque_atual: estoqueAtual,
+      observacao: `Venda ${tipo}`,
+      usuario_id: usuarioLogado.id
+    });
+
+    if (tipo === "Anotada na Conta") {
+      await client.from("conta_aluno_lancamentos").insert({
+        aluno_id: alunoId,
+        tipo: "Produto",
+        referencia_id: venda.id,
+        descricao: item.produto_nome,
+        quantidade: item.quantidade,
+        valor_unitario: item.valor_unitario,
+        valor_total: item.valor_total,
+        status: "Em Aberto",
+        usuario_id: usuarioLogado.id,
+        observacoes: "Venda anotada na conta do aluno"
+      });
+    }
+  }
+
+  if (tipo === "Paga na Hora") {
+    await client.from("pagamentos").insert({
+      aluno_id: alunoId,
+      origem: "Produto",
+      referencia_id: venda.id,
+      descricao: "Venda de produtos",
+      valor: total,
+      forma_pagamento: forma,
+      data_pagamento: hojeISO(),
+      usuario_id: usuarioLogado.id
+    });
+  }
+
+  if (alunoId) {
+    await registrarLog(
+      alunoId,
+      "Vendas",
+      tipo,
+      `Venda registrada no valor de ${BRL.format(total)}.`
+    );
+  }
+
+  carrinhoVenda = [];
+  await carregarBase();
+  await abrirTela("vendas");
+
+  mostrarToast(
+    tipo === "Paga na Hora"
+      ? "Venda finalizada e estoque baixado."
+      : "Venda anotada na conta do aluno e estoque baixado."
+  );
+ }
 
     async function renderFinanceiro() {
       if (!usuarioEhAdmin()) return;
