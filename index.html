@@ -1522,15 +1522,20 @@
       document.getElementById("modalContent").innerHTML = "";
     }
 
-    function abrirModalAluno(id = null) {
-      const aluno = id ? alunosCache.find(a => a.id === id) : null;
-       const planoOptions = planosCache
-  .filter(p => p.ativo !== false)
-  .map(p => `
-    <option value="${p.id}" ${aluno?.plano_id === p.id ? "selected" : ""}>
-      ${p.nome} - ${BRL.format(Number(p.valor || 0))}
-    </option>
-  `).join("");
+   async function abrirModalAluno(id = null) {
+  await carregarBase();
+
+  const aluno = id ? alunosCache.find(a => a.id === id) : null;
+
+  console.log("Planos no modal aluno:", planosCache);
+
+  const planoOptions = planosCache
+    .filter(p => p.ativo !== false)
+    .map(p => `
+      <option value="${p.id}" ${aluno?.plano_id === p.id ? "selected" : ""}>
+        ${p.nome} - ${BRL.format(Number(p.valor || 0))}
+      </option>
+    `).join("");
       const html = `
         <form onsubmit="salvarAluno(event, '${id || ""}')">
           <div class="form-grid">
@@ -1566,9 +1571,9 @@
             <div class="form-group">
               <label>Plano</label>
               <select id="alunoPlano" required onchange="atualizarValorPlanoNoAluno()">
-                <option value="">Selecione</option>
-                ${planoOptions}
-              </select>
+  <option value="">Selecione o plano</option>
+  ${planoOptions}
+</select>
             </div>
 
             <div class="form-group">
