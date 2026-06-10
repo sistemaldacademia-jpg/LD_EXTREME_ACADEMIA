@@ -1,1 +1,3147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LD Extreme Academia | Sistema</title>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg: #080808;
+      --bg2: #111111;
+      --card: #171717;
+      --card2: #202020;
+      --text: #ffffff;
+      --muted: #a7a7a7;
+      --line: rgba(255,255,255,.1);
+      --red: #e50914;
+      --red2: #ff1f2d;
+      --green: #24c96b;
+      --yellow: #f5b942;
+      --blue: #4da3ff;
+      --danger: #ff3b3b;
+      --radius: 18px;
+      --shadow: 0 20px 50px rgba(0,0,0,.45);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Inter, Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      background:
+        radial-gradient(circle at top left, rgba(229,9,20,.18), transparent 35%),
+        radial-gradient(circle at bottom right, rgba(255,255,255,.08), transparent 32%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    button, input, select, textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+      border: none;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    .login-screen {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .login-screen::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(110deg, rgba(0,0,0,.92), rgba(0,0,0,.58)),
+        url("logo.png");
+      background-position: center;
+      background-repeat: no-repeat;
+      background-size: min(650px, 85vw);
+      opacity: .18;
+      pointer-events: none;
+    }
+
+    .login-card {
+      position: relative;
+      width: min(440px, 100%);
+      background: rgba(18,18,18,.92);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      padding: 34px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(12px);
+    }
+
+    .login-brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .brand-mark {
+      width: 54px;
+      height: 54px;
+      border-radius: 16px;
+      background: linear-gradient(135deg, var(--red), #8f0008);
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      font-size: 22px;
+      box-shadow: 0 12px 35px rgba(229,9,20,.35);
+    }
+
+    .login-brand h1 {
+      font-size: 24px;
+      line-height: 1.05;
+      text-transform: uppercase;
+    }
+
+    .login-brand span {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+      text-transform: none;
+      font-weight: 500;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      color: #ddd;
+      font-size: 13px;
+      margin-bottom: 7px;
+      font-weight: 700;
+    }
+
+    input, select, textarea {
+      width: 100%;
+      background: #0f0f0f;
+      border: 1px solid rgba(255,255,255,.14);
+      color: var(--text);
+      border-radius: 14px;
+      padding: 13px 14px;
+      outline: none;
+      transition: .2s;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      border-color: var(--red);
+      box-shadow: 0 0 0 3px rgba(229,9,20,.18);
+    }
+
+    .btn {
+      min-height: 43px;
+      padding: 11px 16px;
+      border-radius: 14px;
+      color: #fff;
+      background: var(--card2);
+      border: 1px solid rgba(255,255,255,.12);
+      font-weight: 800;
+      transition: .2s;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.08);
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--red), #b60009);
+      border-color: rgba(255,255,255,.12);
+      box-shadow: 0 12px 28px rgba(229,9,20,.25);
+    }
+
+    .btn-green {
+      background: linear-gradient(135deg, #1fb563, #0f7d40);
+    }
+
+    .btn-yellow {
+      background: linear-gradient(135deg, #d99a16, #b37400);
+    }
+
+    .btn-blue {
+      background: linear-gradient(135deg, #2c83e5, #16529b);
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #ff3b3b, #af1111);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid rgba(255,255,255,.14);
+    }
+
+    .btn-small {
+      min-height: 34px;
+      padding: 7px 11px;
+      border-radius: 11px;
+      font-size: 12px;
+    }
+
+    .full {
+      width: 100%;
+    }
+
+    .error-box {
+      margin-top: 14px;
+      color: #fff;
+      background: rgba(229,9,20,.18);
+      border: 1px solid rgba(229,9,20,.35);
+      padding: 12px;
+      border-radius: 14px;
+      font-size: 14px;
+    }
+
+    .app {
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar {
+      background: rgba(11,11,11,.96);
+      border-right: 1px solid var(--line);
+      padding: 22px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      overflow: auto;
+    }
+
+    .logo-box {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding-bottom: 22px;
+      border-bottom: 1px solid var(--line);
+      margin-bottom: 18px;
+    }
+
+    .logo-box img {
+      width: 62px;
+      max-height: 50px;
+      object-fit: contain;
+      display: none;
+    }
+
+    .logo-box h2 {
+      font-size: 17px;
+      text-transform: uppercase;
+      line-height: 1.05;
+    }
+
+    .logo-box small {
+      color: var(--muted);
+      display: block;
+      margin-top: 5px;
+      font-size: 12px;
+    }
+
+    .user-chip {
+      background: rgba(255,255,255,.06);
+      border: 1px solid rgba(255,255,255,.1);
+      border-radius: 15px;
+      padding: 12px;
+      margin-bottom: 18px;
+    }
+
+    .user-chip strong {
+      display: block;
+      font-size: 14px;
+    }
+
+    .user-chip span {
+      display: inline-block;
+      margin-top: 7px;
+      background: rgba(229,9,20,.18);
+      color: #ffb5ba;
+      border: 1px solid rgba(229,9,20,.28);
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      font-weight: 900;
+    }
+
+    .menu {
+      display: grid;
+      gap: 8px;
+    }
+
+    .menu button {
+      width: 100%;
+      justify-content: flex-start;
+      text-align: left;
+      background: transparent;
+      color: #d8d8d8;
+      border: 1px solid transparent;
+      padding: 12px 13px;
+      border-radius: 14px;
+      font-weight: 800;
+      transition: .2s;
+    }
+
+    .menu button:hover,
+    .menu button.active {
+      background: rgba(229,9,20,.13);
+      border-color: rgba(229,9,20,.27);
+      color: #fff;
+    }
+
+    .menu .admin-only-label {
+      margin: 16px 0 4px;
+      color: #777;
+      font-size: 11px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    .main {
+      padding: 28px;
+      overflow: hidden;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 15px;
+      margin-bottom: 24px;
+    }
+
+    .topbar h1 {
+      font-size: clamp(24px, 4vw, 38px);
+      text-transform: uppercase;
+      letter-spacing: -.04em;
+    }
+
+    .topbar p {
+      color: var(--muted);
+      margin-top: 5px;
+    }
+
+    .mobile-menu-btn {
+      display: none;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap: 16px;
+      margin-bottom: 22px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.065), rgba(255,255,255,.025));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.2);
+    }
+
+    .card .kpi-label {
+      color: var(--muted);
+      font-size: 13px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+    }
+
+    .card .kpi-value {
+      font-size: 32px;
+      font-weight: 950;
+      margin-top: 8px;
+      letter-spacing: -.04em;
+    }
+
+    .card.red {
+      border-color: rgba(229,9,20,.35);
+      background: linear-gradient(160deg, rgba(229,9,20,.18), rgba(255,255,255,.03));
+    }
+
+    .card.green {
+      border-color: rgba(36,201,107,.35);
+      background: linear-gradient(160deg, rgba(36,201,107,.16), rgba(255,255,255,.03));
+    }
+
+    .card.yellow {
+      border-color: rgba(245,185,66,.35);
+      background: linear-gradient(160deg, rgba(245,185,66,.15), rgba(255,255,255,.03));
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .panel {
+      background: rgba(17,17,17,.92);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 20px;
+      box-shadow: 0 10px 30px rgba(0,0,0,.22);
+      margin-bottom: 18px;
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+
+    .panel-header h2 {
+      font-size: 18px;
+      text-transform: uppercase;
+      letter-spacing: -.02em;
+    }
+
+    .panel-header p {
+      color: var(--muted);
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    .toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 15px;
+      align-items: center;
+    }
+
+    .toolbar input,
+    .toolbar select {
+      width: auto;
+      min-width: 230px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 14px;
+    }
+
+    .form-grid .span-2 {
+      grid-column: span 2;
+    }
+
+    .form-grid .span-3 {
+      grid-column: span 3;
+    }
+
+    .table-wrap {
+      width: 100%;
+      overflow: auto;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 860px;
+      background: rgba(255,255,255,.02);
+    }
+
+    th, td {
+      padding: 13px 12px;
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      text-align: left;
+      vertical-align: middle;
+      font-size: 14px;
+    }
+
+    th {
+      color: #cfcfcf;
+      background: rgba(255,255,255,.045);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+
+    tr:hover td {
+      background: rgba(255,255,255,.025);
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 5px 9px;
+      border-radius: 999px;
+      font-size: 11px;
+      font-weight: 950;
+      text-transform: uppercase;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .badge.green {
+      background: rgba(36,201,107,.14);
+      color: #7ef0ad;
+      border-color: rgba(36,201,107,.28);
+    }
+
+    .badge.red {
+      background: rgba(229,9,20,.15);
+      color: #ff9fa6;
+      border-color: rgba(229,9,20,.3);
+    }
+
+    .badge.yellow {
+      background: rgba(245,185,66,.14);
+      color: #ffd57e;
+      border-color: rgba(245,185,66,.28);
+    }
+
+    .badge.gray {
+      background: rgba(255,255,255,.08);
+      color: #d2d2d2;
+    }
+
+    .actions {
+      display: flex;
+      gap: 7px;
+      flex-wrap: wrap;
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.72);
+      z-index: 50;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 18px;
+    }
+
+    .modal-backdrop.show {
+      display: flex;
+    }
+
+    .modal {
+      width: min(980px, 100%);
+      max-height: 92vh;
+      overflow: auto;
+      background: #121212;
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      padding: 22px;
+    }
+
+    .modal.small {
+      width: min(560px, 100%);
+    }
+
+    .modal-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 15px;
+    }
+
+    .modal-head h2 {
+      text-transform: uppercase;
+      font-size: 20px;
+    }
+
+    .modal-head p {
+      color: var(--muted);
+      margin-top: 5px;
+      font-size: 13px;
+    }
+
+    .close {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.08);
+      color: #fff;
+      font-size: 20px;
+    }
+
+    .toast {
+      position: fixed;
+      right: 18px;
+      bottom: 18px;
+      z-index: 99;
+      background: #161616;
+      border: 1px solid rgba(255,255,255,.12);
+      color: #fff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      min-width: 260px;
+      box-shadow: var(--shadow);
+      display: none;
+    }
+
+    .toast.show {
+      display: block;
+    }
+
+    .toast.success {
+      border-color: rgba(36,201,107,.35);
+    }
+
+    .toast.error {
+      border-color: rgba(229,9,20,.45);
+    }
+
+    .empty {
+      color: var(--muted);
+      padding: 22px;
+      text-align: center;
+      border: 1px dashed rgba(255,255,255,.12);
+      border-radius: 16px;
+      background: rgba(255,255,255,.025);
+    }
+
+    .tabs {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 16px;
+    }
+
+    .tabs button {
+      padding: 9px 13px;
+      border-radius: 12px;
+      background: rgba(255,255,255,.07);
+      color: #fff;
+      font-weight: 850;
+      border: 1px solid rgba(255,255,255,.1);
+    }
+
+    .tabs button.active {
+      background: rgba(229,9,20,.2);
+      border-color: rgba(229,9,20,.35);
+    }
+
+    .debt-list {
+      display: grid;
+      gap: 10px;
+    }
+
+    .debt-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 12px;
+      align-items: center;
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 15px;
+      padding: 13px;
+    }
+
+    .debt-item strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .debt-item span {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .total-box {
+      background: linear-gradient(135deg, rgba(229,9,20,.18), rgba(255,255,255,.04));
+      border: 1px solid rgba(229,9,20,.25);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-top: 14px;
+    }
+
+    .total-box strong {
+      font-size: 24px;
+    }
+
+    .public-treino {
+      min-height: 100vh;
+      padding: 22px;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at top left, rgba(229,9,20,.22), transparent 35%),
+        var(--bg);
+    }
+
+    .public-card {
+      width: min(920px, 100%);
+      background: rgba(17,17,17,.96);
+      border: 1px solid var(--line);
+      border-radius: 26px;
+      padding: 24px;
+      box-shadow: var(--shadow);
+    }
+
+    .exercise-card {
+      background: rgba(255,255,255,.045);
+      border: 1px solid rgba(255,255,255,.09);
+      border-radius: 16px;
+      padding: 14px;
+      margin-bottom: 10px;
+    }
+
+    .exercise-card h4 {
+      margin-bottom: 8px;
+      color: #fff;
+    }
+
+    .exercise-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      color: #ddd;
+      font-size: 13px;
+    }
+
+    .exercise-meta span {
+      background: rgba(255,255,255,.07);
+      padding: 6px 9px;
+      border-radius: 999px;
+    }
+
+    @media (max-width: 1080px) {
+      .app {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        position: fixed;
+        z-index: 40;
+        left: -310px;
+        width: 290px;
+        transition: .2s;
+      }
+
+      .sidebar.show {
+        left: 0;
+      }
+
+      .mobile-menu-btn {
+        display: inline-flex;
+      }
+
+      .cards {
+        grid-template-columns: repeat(2, minmax(0,1fr));
+      }
+
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      .main {
+        padding: 18px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      .cards {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .form-grid .span-2,
+      .form-grid .span-3 {
+        grid-column: span 1;
+      }
+
+      .toolbar input,
+      .toolbar select {
+        width: 100%;
+        min-width: 100%;
+      }
+
+      .topbar {
+        align-items: flex-start;
+      }
+
+      .topbar h1 {
+        font-size: 25px;
+      }
+
+      .login-card {
+        padding: 24px;
+      }
+
+      .debt-item {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div id="publicTreino" class="public-treino hidden">
+    <div class="public-card">
+      <div class="panel-header">
+        <div>
+          <h2>LD Extreme Academia</h2>
+          <p>Área do aluno | Ficha de treino</p>
+        </div>
+        <button class="btn btn-ghost" onclick="window.location.href='index.html'">Voltar</button>
+      </div>
+
+      <div id="treinoLoginBox">
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Código do aluno</label>
+            <input id="publicCodigoAluno" placeholder="Ex: LD0001" />
+          </div>
+
+          <div class="form-group">
+            <label>Senha do treino</label>
+            <input id="publicSenhaTreino" type="password" placeholder="Senha do aluno" />
+          </div>
+
+          <div class="form-group" style="align-self:end;">
+            <button class="btn btn-primary full" onclick="acessarTreinoPublico()">Acessar treino</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="publicTreinoConteudo" class="hidden"></div>
+    </div>
+  </div>
+
+  <div id="loginScreen" class="login-screen">
+    <div class="login-card">
+      <div class="login-brand">
+        <div class="brand-mark">LD</div>
+        <div>
+          <h1>LD Extreme</h1>
+          <span>Sistema de gestão da academia</span>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label>Usuário</label>
+        <input id="loginUsuario" placeholder="Digite seu usuário" autocomplete="username" />
+      </div>
+
+      <div class="form-group">
+        <label>Senha</label>
+        <input id="loginSenha" type="password" placeholder="Digite sua senha" autocomplete="current-password" />
+      </div>
+
+      <button class="btn btn-primary full" onclick="login()">Entrar no sistema</button>
+
+      <div id="loginErro" class="error-box hidden"></div>
+
+      <div style="margin-top:18px;color:var(--muted);font-size:13px;line-height:1.5;">
+        <strong style="color:#fff;">Acesso inicial</strong><br>
+        Admin: ldacademia<br>
+        Funcionário: user
+      </div>
+    </div>
+  </div>
+
+  <div id="app" class="app hidden">
+    <aside id="sidebar" class="sidebar">
+      <div class="logo-box">
+        <div class="brand-mark">LD</div>
+        <div>
+          <h2>LD Extreme</h2>
+          <small>Academia</small>
+        </div>
+      </div>
+
+      <div class="user-chip">
+        <strong id="usuarioNome">Usuário</strong>
+        <span id="usuarioPerfil">perfil</span>
+      </div>
+
+      <nav class="menu">
+        <button id="menuDashboard" class="active" onclick="abrirTela('dashboard')">📊 Dashboard</button>
+        <button id="menuAlunos" onclick="abrirTela('alunos')">👥 Alunos</button>
+        <button id="menuMensalidades" onclick="abrirTela('mensalidades')">💳 Mensalidades</button>
+        <button id="menuInadimplencia" onclick="abrirTela('inadimplencia')">🚨 Inadimplência</button>
+        <button id="menuContaAluno" onclick="abrirTela('contaAluno')">🧾 Conta do Aluno</button>
+        <button id="menuTreinos" onclick="abrirTela('treinos')">🏋️ Treinos</button>
+
+        <div class="admin-only-label admin-only">Administrador</div>
+        <button id="menuFinanceiro" class="admin-only" onclick="abrirTela('financeiro')">💰 Financeiro</button>
+        <button id="menuPlanos" class="admin-only" onclick="abrirTela('planos')">⚙️ Planos</button>
+
+        <button onclick="logout()" style="margin-top:14px;">🚪 Sair</button>
+      </nav>
+    </aside>
+
+    <main class="main">
+      <div class="topbar">
+        <div>
+          <button class="btn btn-ghost mobile-menu-btn" onclick="toggleSidebar()">☰ Menu</button>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Resumo geral da LD Extreme Academia</p>
+        </div>
+
+        <div class="actions">
+          <a class="btn btn-ghost" href="https://www.instagram.com/ld_extremeacademia?utm_source=ig_web_button_share_sheet&igsh=ZDNlZDc0MzIxNw==" target="_blank">Instagram</a>
+          <a class="btn btn-primary" href="https://wa.me/5555999864588" target="_blank">WhatsApp</a>
+        </div>
+      </div>
+
+      <section id="telaDashboard"></section>
+      <section id="telaAlunos" class="hidden"></section>
+      <section id="telaMensalidades" class="hidden"></section>
+      <section id="telaInadimplencia" class="hidden"></section>
+      <section id="telaContaAluno" class="hidden"></section>
+      <section id="telaTreinos" class="hidden"></section>
+      <section id="telaFinanceiro" class="hidden"></section>
+      <section id="telaPlanos" class="hidden"></section>
+    </main>
+  </div>
+
+  <div id="modalBackdrop" class="modal-backdrop">
+    <div id="modalBox" class="modal">
+      <div class="modal-head">
+        <div>
+          <h2 id="modalTitle">Modal</h2>
+          <p id="modalSubtitle"></p>
+        </div>
+        <button class="close" onclick="fecharModal()">×</button>
+      </div>
+
+      <div id="modalContent"></div>
+    </div>
+  </div>
+
+  <div id="toast" class="toast"></div>
+
+  <script>
+    const SUPABASE_URL = "https://ntrmqnwjuxndpsremgay.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_2gRsGHrryt2hmBJT4vQ2lg_rkd2DD5H";
+
+    const client = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+    let usuarioLogado = null;
+    let alunosCache = [];
+    let planosCache = [];
+    let mensalidadesCache = [];
+    let telaAtual = "dashboard";
+
+    const BRL = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL"
+    });
+
+    document.addEventListener("DOMContentLoaded", async () => {
+      const params = new URLSearchParams(window.location.search);
+      const treinoCodigo = params.get("treino");
+
+      if (treinoCodigo) {
+        document.getElementById("publicTreino").classList.remove("hidden");
+        document.getElementById("loginScreen").classList.add("hidden");
+        document.getElementById("app").classList.add("hidden");
+        document.getElementById("publicCodigoAluno").value = treinoCodigo.toUpperCase();
+        return;
+      }
+
+      const salvo = localStorage.getItem("ld_usuario");
+      if (salvo) {
+        usuarioLogado = JSON.parse(salvo);
+        iniciarApp();
+      }
+    });
+
+    function mostrarToast(msg, tipo = "success") {
+      const el = document.getElementById("toast");
+      el.textContent = msg;
+      el.className = "toast show " + tipo;
+      setTimeout(() => {
+        el.className = "toast";
+      }, 3500);
+    }
+
+    function formatarData(data) {
+      if (!data) return "-";
+      const [ano, mes, dia] = data.split("-");
+      return `${dia}/${mes}/${ano}`;
+    }
+
+    function hojeISO() {
+      return new Date().toISOString().slice(0, 10);
+    }
+
+    function proximoVencimento(dia) {
+      const hoje = new Date();
+      let ano = hoje.getFullYear();
+      let mes = hoje.getMonth();
+
+      let venc = new Date(ano, mes, Number(dia || 10));
+
+      if (venc < new Date(hoje.getFullYear(), hoje.getMonth(), hoje.getDate())) {
+        venc = new Date(ano, mes + 1, Number(dia || 10));
+      }
+
+      const y = venc.getFullYear();
+      const m = String(venc.getMonth() + 1).padStart(2, "0");
+      const d = String(venc.getDate()).padStart(2, "0");
+      return `${y}-${m}-${d}`;
+    }
+
+    function mesAnoDaData(dataISO) {
+      const d = new Date(dataISO + "T00:00:00");
+      return {
+        mes: d.getMonth() + 1,
+        ano: d.getFullYear()
+      };
+    }
+
+    function gerarSenhaTreino() {
+      return Math.random().toString(36).slice(2, 8).toUpperCase();
+    }
+
+    function usuarioEhAdmin() {
+      return usuarioLogado && usuarioLogado.perfil === "admin";
+    }
+
+    async function login() {
+      const usuario = document.getElementById("loginUsuario").value.trim();
+      const senha = document.getElementById("loginSenha").value.trim();
+      const erro = document.getElementById("loginErro");
+
+      erro.classList.add("hidden");
+      erro.textContent = "";
+
+      if (!usuario || !senha) {
+        erro.textContent = "Informe usuário e senha.";
+        erro.classList.remove("hidden");
+        return;
+      }
+
+      const { data, error } = await client.rpc("login_sistema", {
+        p_usuario: usuario,
+        p_senha: senha
+      });
+
+      if (error) {
+        erro.textContent = "Erro ao conectar no Supabase: " + error.message;
+        erro.classList.remove("hidden");
+        return;
+      }
+
+      if (!data || !data.length) {
+        erro.textContent = "Usuário ou senha inválidos.";
+        erro.classList.remove("hidden");
+        return;
+      }
+
+      usuarioLogado = data[0];
+      localStorage.setItem("ld_usuario", JSON.stringify(usuarioLogado));
+      iniciarApp();
+    }
+
+    async function iniciarApp() {
+      document.getElementById("loginScreen").classList.add("hidden");
+      document.getElementById("app").classList.remove("hidden");
+
+      document.getElementById("usuarioNome").textContent = usuarioLogado.nome;
+      document.getElementById("usuarioPerfil").textContent = usuarioLogado.perfil;
+
+      document.querySelectorAll(".admin-only").forEach(el => {
+        el.style.display = usuarioEhAdmin() ? "" : "none";
+      });
+
+      await atualizarMensalidadesVencidas();
+      await carregarBase();
+      abrirTela("dashboard");
+    }
+
+    function logout() {
+      localStorage.removeItem("ld_usuario");
+      usuarioLogado = null;
+      window.location.href = "index.html";
+    }
+
+    function toggleSidebar() {
+      document.getElementById("sidebar").classList.toggle("show");
+    }
+
+    function setTitulo(titulo, subtitulo) {
+      document.getElementById("pageTitle").textContent = titulo;
+      document.getElementById("pageSubtitle").textContent = subtitulo || "";
+    }
+
+    function limparMenus() {
+      document.querySelectorAll(".menu button").forEach(btn => btn.classList.remove("active"));
+    }
+
+    function esconderTelas() {
+      [
+        "telaDashboard",
+        "telaAlunos",
+        "telaMensalidades",
+        "telaInadimplencia",
+        "telaContaAluno",
+        "telaTreinos",
+        "telaFinanceiro",
+        "telaPlanos"
+      ].forEach(id => document.getElementById(id).classList.add("hidden"));
+    }
+
+    async function abrirTela(tela) {
+      if ((tela === "financeiro" || tela === "planos") && !usuarioEhAdmin()) {
+        mostrarToast("Acesso restrito ao administrador.", "error");
+        return;
+      }
+
+      telaAtual = tela;
+      esconderTelas();
+      limparMenus();
+
+      document.getElementById("sidebar").classList.remove("show");
+
+      if (tela === "dashboard") {
+        document.getElementById("telaDashboard").classList.remove("hidden");
+        document.getElementById("menuDashboard").classList.add("active");
+        setTitulo("Dashboard", "Resumo geral da LD Extreme Academia");
+        await renderDashboard();
+      }
+
+      if (tela === "alunos") {
+        document.getElementById("telaAlunos").classList.remove("hidden");
+        document.getElementById("menuAlunos").classList.add("active");
+        setTitulo("Alunos", "Cadastro, edição e histórico dos alunos");
+        await renderAlunos();
+      }
+
+      if (tela === "mensalidades") {
+        document.getElementById("telaMensalidades").classList.remove("hidden");
+        document.getElementById("menuMensalidades").classList.add("active");
+        setTitulo("Mensalidades", "Controle de cobranças, vencimentos e pagamentos");
+        await renderMensalidades();
+      }
+
+      if (tela === "inadimplencia") {
+        document.getElementById("telaInadimplencia").classList.remove("hidden");
+        document.getElementById("menuInadimplencia").classList.add("active");
+        setTitulo("Inadimplência", "Alunos com mensalidades ou débitos em aberto");
+        await renderInadimplencia();
+      }
+
+      if (tela === "contaAluno") {
+        document.getElementById("telaContaAluno").classList.remove("hidden");
+        document.getElementById("menuContaAluno").classList.add("active");
+        setTitulo("Conta do Aluno", "Débitos separados por mensalidade, produtos e serviços");
+        await renderContaAluno();
+      }
+
+      if (tela === "treinos") {
+        document.getElementById("telaTreinos").classList.remove("hidden");
+        document.getElementById("menuTreinos").classList.add("active");
+        setTitulo("Treinos", "Fichas de treino com acesso por senha");
+        await renderTreinos();
+      }
+
+      if (tela === "financeiro") {
+        document.getElementById("telaFinanceiro").classList.remove("hidden");
+        document.getElementById("menuFinanceiro").classList.add("active");
+        setTitulo("Financeiro", "Receitas e relatórios financeiros");
+        await renderFinanceiro();
+      }
+
+      if (tela === "planos") {
+        document.getElementById("telaPlanos").classList.remove("hidden");
+        document.getElementById("menuPlanos").classList.add("active");
+        setTitulo("Planos", "Configuração dos planos da academia");
+        await renderPlanos();
+      }
+    }
+
+    async function carregarBase() {
+      const planosReq = client.from("planos").select("*").order("valor", { ascending: true });
+      const alunosReq = client.from("alunos").select("*, planos(nome)").order("criado_em", { ascending: false });
+      const mensalidadesReq = client
+        .from("mensalidades")
+        .select("*, alunos(codigo,nome,telefone), planos(nome)")
+        .order("data_vencimento", { ascending: false });
+
+      const [planosRes, alunosRes, mensalidadesRes] = await Promise.all([
+        planosReq,
+        alunosReq,
+        mensalidadesReq
+      ]);
+
+      if (planosRes.error) mostrarToast("Erro ao carregar planos: " + planosRes.error.message, "error");
+      if (alunosRes.error) mostrarToast("Erro ao carregar alunos: " + alunosRes.error.message, "error");
+      if (mensalidadesRes.error) mostrarToast("Erro ao carregar mensalidades: " + mensalidadesRes.error.message, "error");
+
+      planosCache = planosRes.data || [];
+      alunosCache = alunosRes.data || [];
+      mensalidadesCache = mensalidadesRes.data || [];
+    }
+
+    async function atualizarMensalidadesVencidas() {
+      await client.rpc("atualizar_mensalidades_vencidas");
+    }
+
+    async function renderDashboard() {
+      await carregarBase();
+
+      const totalAlunos = alunosCache.filter(a => a.ativo).length;
+      const atrasados = mensalidadesCache.filter(m => m.status === "Vencido").length;
+      const pendentes = mensalidadesCache.filter(m => m.status === "Pendente").length;
+
+      let faturamentoMes = 0;
+
+      if (usuarioEhAdmin()) {
+        const inicioMes = new Date();
+        const ano = inicioMes.getFullYear();
+        const mes = String(inicioMes.getMonth() + 1).padStart(2, "0");
+        const primeiroDia = `${ano}-${mes}-01`;
+
+        const { data: pagamentos } = await client
+          .from("pagamentos")
+          .select("*")
+          .gte("data_pagamento", primeiroDia);
+
+        faturamentoMes = (pagamentos || []).reduce((s, p) => s + Number(p.valor || 0), 0);
+      }
+
+      const cardFinanceiro = usuarioEhAdmin()
+        ? `
+          <div class="card green">
+            <div class="kpi-label">Faturamento do mês</div>
+            <div class="kpi-value">${BRL.format(faturamentoMes)}</div>
+          </div>
+        `
+        : "";
+
+      const html = `
+        <div class="cards">
+          <div class="card">
+            <div class="kpi-label">Alunos cadastrados</div>
+            <div class="kpi-value">${totalAlunos}</div>
+          </div>
+
+          <div class="card red">
+            <div class="kpi-label">Mensalidades vencidas</div>
+            <div class="kpi-value">${atrasados}</div>
+          </div>
+
+          <div class="card yellow">
+            <div class="kpi-label">Mensalidades pendentes</div>
+            <div class="kpi-value">${pendentes}</div>
+          </div>
+
+          ${cardFinanceiro}
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Alertas de mensalidades</h2>
+                <p>Mensalidades pendentes ou vencidas</p>
+              </div>
+              <button class="btn btn-small btn-primary" onclick="abrirTela('inadimplencia')">Ver inadimplência</button>
+            </div>
+            ${renderResumoMensalidadesDashboard()}
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Dados da academia</h2>
+                <p>Informações principais da LD Extreme</p>
+              </div>
+            </div>
+
+            <div class="debt-list">
+              <div class="debt-item">
+                <div>
+                  <strong>WhatsApp</strong>
+                  <span>55 99986-4588</span>
+                </div>
+                <a class="btn btn-small btn-green" href="https://wa.me/5555999864588" target="_blank">Abrir</a>
+              </div>
+
+              <div class="debt-item">
+                <div>
+                  <strong>Endereço</strong>
+                  <span>Coronel Sabino Roque, 650 - Centro</span>
+                </div>
+              </div>
+
+              <div class="debt-item">
+                <div>
+                  <strong>Horários</strong>
+                  <span>Seg a sex: 06h às 10h e 14h às 21h30. Sexta até 21h. Sábado: 09h30 às 11h.</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("telaDashboard").innerHTML = html;
+    }
+
+    function renderResumoMensalidadesDashboard() {
+      const lista = mensalidadesCache
+        .filter(m => m.status === "Vencido" || m.status === "Pendente")
+        .slice(0, 7);
+
+      if (!lista.length) {
+        return `<div class="empty">Nenhuma mensalidade pendente no momento.</div>`;
+      }
+
+      return `
+        <div class="debt-list">
+          ${lista.map(m => `
+            <div class="debt-item">
+              <div>
+                <strong>${m.alunos?.nome || "Aluno"}</strong>
+                <span>${m.status} | Vencimento: ${formatarData(m.data_vencimento)} | ${BRL.format(Number(m.valor || 0))}</span>
+              </div>
+              <button class="btn btn-small btn-green" onclick="baixarMensalidade('${m.id}')">Baixar</button>
+            </div>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    async function renderAlunos() {
+      await carregarBase();
+
+      const html = `
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Alunos cadastrados</h2>
+              <p>Pesquise por nome, telefone ou código</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalAluno()">+ Novo aluno</button>
+          </div>
+
+          <div class="toolbar">
+            <input id="buscaAluno" placeholder="Buscar aluno..." oninput="filtrarTabelaAlunos()" />
+            <select id="filtroStatusAluno" onchange="filtrarTabelaAlunos()">
+              <option value="">Todos os status</option>
+              <option value="Em Dia">Em Dia</option>
+              <option value="Em Atraso">Em Atraso</option>
+              <option value="Inativo">Inativo</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Código</th>
+                  <th>Aluno</th>
+                  <th>Telefone</th>
+                  <th>Plano</th>
+                  <th>Venc.</th>
+                  <th>Status</th>
+                  <th>Treino</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyAlunos"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("telaAlunos").innerHTML = html;
+      filtrarTabelaAlunos();
+    }
+
+    function filtrarTabelaAlunos() {
+      const busca = (document.getElementById("buscaAluno")?.value || "").toLowerCase();
+      const status = document.getElementById("filtroStatusAluno")?.value || "";
+
+      const lista = alunosCache.filter(a => {
+        const texto = `${a.codigo} ${a.nome} ${a.telefone || ""}`.toLowerCase();
+        const okBusca = texto.includes(busca);
+        const okStatus = !status || a.status === status;
+        return okBusca && okStatus;
+      });
+
+      const tbody = document.getElementById("tbodyAlunos");
+      if (!tbody) return;
+
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="8">Nenhum aluno encontrado.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(a => `
+        <tr>
+          <td><strong>${a.codigo}</strong></td>
+          <td>${a.nome}</td>
+          <td>${a.telefone || "-"}</td>
+          <td>${a.planos?.nome || "-"}</td>
+          <td>${a.dia_vencimento || "-"}</td>
+          <td>${badgeStatusAluno(a.status)}</td>
+          <td>
+            <button class="btn btn-small btn-blue" onclick="copiarLinkTreino('${a.codigo}')">Link</button>
+          </td>
+          <td>
+            <div class="actions">
+              <button class="btn btn-small" onclick="abrirFichaAluno('${a.id}')">Ficha</button>
+              <button class="btn btn-small btn-yellow" onclick="abrirModalAluno('${a.id}')">Editar</button>
+              <button class="btn btn-small btn-danger" onclick="excluirAluno('${a.id}')">Excluir</button>
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function badgeStatusAluno(status) {
+      if (status === "Em Dia") return `<span class="badge green">Em Dia</span>`;
+      if (status === "Em Atraso") return `<span class="badge red">Em Atraso</span>`;
+      if (status === "Inativo") return `<span class="badge gray">Inativo</span>`;
+      return `<span class="badge gray">${status || "-"}</span>`;
+    }
+
+    function abrirModal(titulo, subtitulo, conteudo, pequeno = false) {
+      document.getElementById("modalTitle").textContent = titulo;
+      document.getElementById("modalSubtitle").textContent = subtitulo || "";
+      document.getElementById("modalContent").innerHTML = conteudo;
+      document.getElementById("modalBox").className = pequeno ? "modal small" : "modal";
+      document.getElementById("modalBackdrop").classList.add("show");
+    }
+
+    function fecharModal() {
+      document.getElementById("modalBackdrop").classList.remove("show");
+      document.getElementById("modalContent").innerHTML = "";
+    }
+
+    function abrirModalAluno(id = null) {
+      const aluno = id ? alunosCache.find(a => a.id === id) : null;
+
+      const planoOptions = planosCache.map(p => `
+        <option value="${p.id}" ${aluno?.plano_id === p.id ? "selected" : ""}>
+          ${p.nome} - ${BRL.format(Number(p.valor))}
+        </option>
+      `).join("");
+
+      const html = `
+        <form onsubmit="salvarAluno(event, '${id || ""}')">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Nome completo</label>
+              <input id="alunoNome" required value="${aluno?.nome || ""}" />
+            </div>
+
+            <div class="form-group">
+              <label>Telefone</label>
+              <input id="alunoTelefone" value="${aluno?.telefone || ""}" placeholder="55 99999-9999" />
+            </div>
+
+            <div class="form-group">
+              <label>Data de nascimento</label>
+              <input id="alunoNascimento" type="date" value="${aluno?.data_nascimento || ""}" />
+            </div>
+
+            <div class="form-group">
+              <label>Dia de vencimento</label>
+              <input id="alunoVencimento" type="number" min="1" max="31" required value="${aluno?.dia_vencimento || 10}" />
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select id="alunoStatus">
+                <option ${aluno?.status === "Em Dia" ? "selected" : ""}>Em Dia</option>
+                <option ${aluno?.status === "Em Atraso" ? "selected" : ""}>Em Atraso</option>
+                <option ${aluno?.status === "Inativo" ? "selected" : ""}>Inativo</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Plano</label>
+              <select id="alunoPlano" required onchange="atualizarValorPlanoNoAluno()">
+                <option value="">Selecione</option>
+                ${planoOptions}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Valor da mensalidade</label>
+              <input id="alunoValor" type="number" step="0.01" value="${aluno?.valor_mensalidade || ""}" />
+            </div>
+
+            <div class="form-group">
+              <label>Senha do treino</label>
+              <input id="alunoSenhaTreino" value="${aluno?.senha_treino || gerarSenhaTreino()}" />
+            </div>
+
+            <div class="form-group">
+              <label>Objetivo</label>
+              <select id="alunoObjetivo">
+                ${[
+                  "Emagrecimento",
+                  "Hipertrofia",
+                  "Ganho de massa muscular",
+                  "Condicionamento físico",
+                  "Reabilitação",
+                  "Saúde e bem-estar",
+                  "Outro"
+                ].map(o => `<option ${aluno?.objetivo === o ? "selected" : ""}>${o}</option>`).join("")}
+              </select>
+            </div>
+
+            <div class="form-group span-3">
+              <label>Lesões ou restrições físicas</label>
+              <textarea id="alunoLesoes">${aluno?.lesoes_restricoes || ""}</textarea>
+            </div>
+
+            <div class="form-group span-3">
+              <label>Observações gerais</label>
+              <textarea id="alunoObs">${aluno?.observacoes || ""}</textarea>
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar aluno</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal(aluno ? "Editar aluno" : "Novo aluno", aluno ? aluno.codigo : "Código gerado automaticamente", html);
+      if (!aluno) atualizarValorPlanoNoAluno();
+    }
+
+    function atualizarValorPlanoNoAluno() {
+      const planoId = document.getElementById("alunoPlano")?.value;
+      const plano = planosCache.find(p => p.id === planoId);
+      if (plano && document.getElementById("alunoValor")) {
+        document.getElementById("alunoValor").value = Number(plano.valor).toFixed(2);
+      }
+    }
+
+    async function salvarAluno(event, id) {
+      event.preventDefault();
+
+      const planoId = document.getElementById("alunoPlano").value;
+      const plano = planosCache.find(p => p.id === planoId);
+
+      const payload = {
+        nome: document.getElementById("alunoNome").value.trim(),
+        telefone: document.getElementById("alunoTelefone").value.trim(),
+        data_nascimento: document.getElementById("alunoNascimento").value || null,
+        dia_vencimento: Number(document.getElementById("alunoVencimento").value),
+        status: document.getElementById("alunoStatus").value,
+        plano_id: planoId || null,
+        valor_mensalidade: Number(document.getElementById("alunoValor").value || plano?.valor || 0),
+        senha_treino: document.getElementById("alunoSenhaTreino").value.trim(),
+        objetivo: document.getElementById("alunoObjetivo").value,
+        lesoes_restricoes: document.getElementById("alunoLesoes").value.trim(),
+        observacoes: document.getElementById("alunoObs").value.trim(),
+        atualizado_em: new Date().toISOString()
+      };
+
+      if (!payload.nome) {
+        mostrarToast("Informe o nome do aluno.", "error");
+        return;
+      }
+
+      let res;
+
+      if (id) {
+        res = await client.from("alunos").update(payload).eq("id", id).select().single();
+      } else {
+        res = await client.from("alunos").insert(payload).select().single();
+      }
+
+      if (res.error) {
+        mostrarToast("Erro ao salvar aluno: " + res.error.message, "error");
+        return;
+      }
+
+      if (!id) {
+        await criarMensalidadeInicial(res.data);
+        await registrarLog(res.data.id, "Alunos", "Cadastro", "Aluno cadastrado no sistema.");
+      } else {
+        await registrarLog(id, "Alunos", "Edição", "Dados cadastrais atualizados.");
+      }
+
+      fecharModal();
+      await carregarBase();
+      await abrirTela("alunos");
+      mostrarToast("Aluno salvo com sucesso.");
+    }
+
+    async function criarMensalidadeInicial(aluno) {
+      if (!aluno.plano_id || !aluno.valor_mensalidade || !aluno.dia_vencimento) return;
+
+      const venc = proximoVencimento(aluno.dia_vencimento);
+      const comp = mesAnoDaData(venc);
+
+      await client.from("mensalidades").insert({
+        aluno_id: aluno.id,
+        plano_id: aluno.plano_id,
+        descricao: "Mensalidade",
+        competencia_mes: comp.mes,
+        competencia_ano: comp.ano,
+        valor: Number(aluno.valor_mensalidade || 0),
+        data_vencimento: venc,
+        status: "Pendente"
+      });
+    }
+
+    async function excluirAluno(id) {
+      const aluno = alunosCache.find(a => a.id === id);
+      if (!confirm(`Deseja realmente excluir/inativar o aluno ${aluno?.nome || ""}?`)) return;
+
+      const { error } = await client
+        .from("alunos")
+        .update({ ativo: false, status: "Inativo", atualizado_em: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) {
+        mostrarToast("Erro ao excluir aluno: " + error.message, "error");
+        return;
+      }
+
+      await registrarLog(id, "Alunos", "Inativação", "Aluno marcado como inativo.");
+      await carregarBase();
+      await abrirTela("alunos");
+      mostrarToast("Aluno inativado.");
+    }
+
+    async function abrirFichaAluno(id) {
+      const aluno = alunosCache.find(a => a.id === id);
+      if (!aluno) return;
+
+      const { data: mensalidades } = await client
+        .from("mensalidades")
+        .select("*")
+        .eq("aluno_id", id)
+        .order("data_vencimento", { ascending: false });
+
+      const { data: lancamentos } = await client
+        .from("conta_aluno_lancamentos")
+        .select("*")
+        .eq("aluno_id", id)
+        .order("criado_em", { ascending: false });
+
+      const { data: logs } = await client
+        .from("logs_sistema")
+        .select("*")
+        .eq("aluno_id", id)
+        .order("criado_em", { ascending: false })
+        .limit(20);
+
+      const html = `
+        <div class="tabs">
+          <button class="active" onclick="mostrarAbaFicha('dados')">Dados</button>
+          <button onclick="mostrarAbaFicha('mensalidades')">Mensalidades</button>
+          <button onclick="mostrarAbaFicha('conta')">Conta</button>
+          <button onclick="mostrarAbaFicha('historico')">Histórico</button>
+        </div>
+
+        <div id="abaFichaDados">
+          <div class="cards">
+            <div class="card">
+              <div class="kpi-label">Código</div>
+              <div class="kpi-value">${aluno.codigo}</div>
+            </div>
+            <div class="card">
+              <div class="kpi-label">Status</div>
+              <div style="margin-top:12px;">${badgeStatusAluno(aluno.status)}</div>
+            </div>
+            <div class="card">
+              <div class="kpi-label">Mensalidade</div>
+              <div class="kpi-value">${BRL.format(Number(aluno.valor_mensalidade || 0))}</div>
+            </div>
+            <div class="card">
+              <div class="kpi-label">Vencimento</div>
+              <div class="kpi-value">Dia ${aluno.dia_vencimento || "-"}</div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <p><strong>Nome:</strong> ${aluno.nome}</p><br>
+            <p><strong>Telefone:</strong> ${aluno.telefone || "-"}</p><br>
+            <p><strong>Objetivo:</strong> ${aluno.objetivo || "-"}</p><br>
+            <p><strong>Restrições:</strong> ${aluno.lesoes_restricoes || "-"}</p><br>
+            <p><strong>Observações:</strong> ${aluno.observacoes || "-"}</p><br>
+            <p><strong>Senha do treino:</strong> ${aluno.senha_treino || "-"}</p>
+          </div>
+        </div>
+
+        <div id="abaFichaMensalidades" class="hidden">
+          ${renderTabelaMensalidadesSimples(mensalidades || [])}
+        </div>
+
+        <div id="abaFichaConta" class="hidden">
+          ${renderLancamentosConta(lancamentos || [])}
+        </div>
+
+        <div id="abaFichaHistorico" class="hidden">
+          ${
+            logs?.length
+              ? `<div class="debt-list">${logs.map(l => `
+                  <div class="debt-item">
+                    <div>
+                      <strong>${l.acao}</strong>
+                      <span>${l.modulo || "-"} | ${new Date(l.criado_em).toLocaleString("pt-BR")}</span>
+                      <br><span>${l.descricao || ""}</span>
+                    </div>
+                  </div>
+                `).join("")}</div>`
+              : `<div class="empty">Nenhum histórico registrado.</div>`
+          }
+        </div>
+      `;
+
+      abrirModal(`Ficha do aluno`, `${aluno.codigo} - ${aluno.nome}`, html);
+    }
+
+    function mostrarAbaFicha(aba) {
+      ["Dados", "Mensalidades", "Conta", "Historico"].forEach(nome => {
+        document.getElementById("abaFicha" + nome)?.classList.add("hidden");
+      });
+
+      document.querySelectorAll(".tabs button").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+
+      const alvo = {
+        dados: "abaFichaDados",
+        mensalidades: "abaFichaMensalidades",
+        conta: "abaFichaConta",
+        historico: "abaFichaHistorico"
+      }[aba];
+
+      document.getElementById(alvo).classList.remove("hidden");
+    }
+
+    function renderTabelaMensalidadesSimples(lista) {
+      if (!lista.length) return `<div class="empty">Nenhuma mensalidade encontrada.</div>`;
+
+      return `
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Competência</th>
+                <th>Vencimento</th>
+                <th>Valor</th>
+                <th>Status</th>
+                <th>Pagamento</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${lista.map(m => `
+                <tr>
+                  <td>${String(m.competencia_mes).padStart(2,"0")}/${m.competencia_ano}</td>
+                  <td>${formatarData(m.data_vencimento)}</td>
+                  <td>${BRL.format(Number(m.valor || 0))}</td>
+                  <td>${badgeStatusMensalidade(m.status)}</td>
+                  <td>${formatarData(m.data_pagamento)}</td>
+                </tr>
+              `).join("")}
+            </tbody>
+          </table>
+        </div>
+      `;
+    }
+
+    function renderLancamentosConta(lista) {
+      if (!lista.length) return `<div class="empty">Nenhum lançamento na conta do aluno.</div>`;
+
+      const total = lista
+        .filter(l => l.status === "Em Aberto")
+        .reduce((s, l) => s + Number(l.valor_total || 0), 0);
+
+      return `
+        <div class="debt-list">
+          ${lista.map(l => `
+            <div class="debt-item">
+              <div>
+                <strong>${l.descricao}</strong>
+                <span>${l.tipo} | ${formatarData(l.data_lancamento)} | ${l.status}</span>
+              </div>
+              <strong>${BRL.format(Number(l.valor_total || 0))}</strong>
+            </div>
+          `).join("")}
+        </div>
+        <div class="total-box">
+          <span>Total em aberto</span>
+          <strong>${BRL.format(total)}</strong>
+        </div>
+      `;
+    }
+
+    async function renderMensalidades() {
+      await carregarBase();
+
+      const html = `
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Mensalidades</h2>
+              <p>Pagas, pendentes, vencidas e canceladas</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalMensalidadeManual()">+ Nova mensalidade</button>
+          </div>
+
+          <div class="toolbar">
+            <input id="buscaMensalidade" placeholder="Buscar por aluno..." oninput="filtrarMensalidades()" />
+            <select id="filtroStatusMensalidade" onchange="filtrarMensalidades()">
+              <option value="">Todos os status</option>
+              <option value="Pendente">Pendente</option>
+              <option value="Vencido">Vencido</option>
+              <option value="Pago">Pago</option>
+              <option value="Cancelado">Cancelado</option>
+            </select>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Aluno</th>
+                  <th>Plano</th>
+                  <th>Competência</th>
+                  <th>Vencimento</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Forma</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody id="tbodyMensalidades"></tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("telaMensalidades").innerHTML = html;
+      filtrarMensalidades();
+    }
+
+    function filtrarMensalidades() {
+      const busca = (document.getElementById("buscaMensalidade")?.value || "").toLowerCase();
+      const status = document.getElementById("filtroStatusMensalidade")?.value || "";
+
+      const lista = mensalidadesCache.filter(m => {
+        const texto = `${m.alunos?.nome || ""} ${m.alunos?.codigo || ""}`.toLowerCase();
+        const okBusca = texto.includes(busca);
+        const okStatus = !status || m.status === status;
+        return okBusca && okStatus;
+      });
+
+      const tbody = document.getElementById("tbodyMensalidades");
+      if (!tbody) return;
+
+      if (!lista.length) {
+        tbody.innerHTML = `<tr><td colspan="8">Nenhuma mensalidade encontrada.</td></tr>`;
+        return;
+      }
+
+      tbody.innerHTML = lista.map(m => `
+        <tr>
+          <td>
+            <strong>${m.alunos?.nome || "-"}</strong><br>
+            <span style="color:var(--muted);font-size:12px;">${m.alunos?.codigo || ""}</span>
+          </td>
+          <td>${m.planos?.nome || "-"}</td>
+          <td>${String(m.competencia_mes).padStart(2,"0")}/${m.competencia_ano}</td>
+          <td>${formatarData(m.data_vencimento)}</td>
+          <td>${BRL.format(Number(m.valor || 0))}</td>
+          <td>${badgeStatusMensalidade(m.status)}</td>
+          <td>${m.forma_pagamento || "-"}</td>
+          <td>
+            <div class="actions">
+              ${
+                m.status !== "Pago" && m.status !== "Cancelado"
+                  ? `<button class="btn btn-small btn-green" onclick="baixarMensalidade('${m.id}')">Baixar</button>`
+                  : ""
+              }
+              <button class="btn btn-small btn-blue" onclick="mensagemWhatsappMensalidade('${m.id}')">Whats</button>
+              ${
+                m.status !== "Cancelado"
+                  ? `<button class="btn btn-small btn-danger" onclick="cancelarMensalidade('${m.id}')">Cancelar</button>`
+                  : ""
+              }
+            </div>
+          </td>
+        </tr>
+      `).join("");
+    }
+
+    function badgeStatusMensalidade(status) {
+      if (status === "Pago") return `<span class="badge green">Pago</span>`;
+      if (status === "Vencido") return `<span class="badge red">Vencido</span>`;
+      if (status === "Pendente") return `<span class="badge yellow">Pendente</span>`;
+      if (status === "Cancelado") return `<span class="badge gray">Cancelado</span>`;
+      return `<span class="badge gray">${status || "-"}</span>`;
+    }
+
+    function abrirModalMensalidadeManual() {
+      const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+        <option value="${a.id}">${a.codigo} - ${a.nome}</option>
+      `).join("");
+
+      const html = `
+        <form onsubmit="salvarMensalidadeManual(event)">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Aluno</label>
+              <select id="mensalidadeAluno" required onchange="preencherMensalidadeAluno()">
+                <option value="">Selecione</option>
+                ${alunoOptions}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Valor</label>
+              <input id="mensalidadeValor" type="number" step="0.01" required />
+            </div>
+
+            <div class="form-group">
+              <label>Data de vencimento</label>
+              <input id="mensalidadeVencimento" type="date" required />
+            </div>
+
+            <div class="form-group span-2">
+              <label>Descrição</label>
+              <input id="mensalidadeDescricao" value="Mensalidade" />
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Criar mensalidade</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal("Nova mensalidade", "Cadastro manual de cobrança", html, true);
+    }
+
+    function preencherMensalidadeAluno() {
+      const id = document.getElementById("mensalidadeAluno").value;
+      const aluno = alunosCache.find(a => a.id === id);
+      if (!aluno) return;
+      document.getElementById("mensalidadeValor").value = Number(aluno.valor_mensalidade || 0).toFixed(2);
+      document.getElementById("mensalidadeVencimento").value = proximoVencimento(aluno.dia_vencimento);
+    }
+
+    async function salvarMensalidadeManual(event) {
+      event.preventDefault();
+
+      const alunoId = document.getElementById("mensalidadeAluno").value;
+      const aluno = alunosCache.find(a => a.id === alunoId);
+      const venc = document.getElementById("mensalidadeVencimento").value;
+      const comp = mesAnoDaData(venc);
+
+      const { error } = await client.from("mensalidades").insert({
+        aluno_id: alunoId,
+        plano_id: aluno?.plano_id || null,
+        descricao: document.getElementById("mensalidadeDescricao").value.trim() || "Mensalidade",
+        competencia_mes: comp.mes,
+        competencia_ano: comp.ano,
+        valor: Number(document.getElementById("mensalidadeValor").value || 0),
+        data_vencimento: venc,
+        status: "Pendente"
+      });
+
+      if (error) {
+        mostrarToast("Erro ao criar mensalidade: " + error.message, "error");
+        return;
+      }
+
+      await registrarLog(alunoId, "Mensalidades", "Cadastro", "Mensalidade criada manualmente.");
+      fecharModal();
+      await carregarBase();
+      await abrirTela("mensalidades");
+      mostrarToast("Mensalidade criada.");
+    }
+
+    function baixarMensalidade(id) {
+      const m = mensalidadesCache.find(x => x.id === id);
+      if (!m) return;
+
+      const html = `
+        <form onsubmit="confirmarBaixaMensalidade(event, '${id}')">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Aluno</label>
+              <input disabled value="${m.alunos?.nome || "-"}" />
+            </div>
+
+            <div class="form-group">
+              <label>Valor</label>
+              <input id="baixaValor" type="number" step="0.01" value="${Number(m.valor || 0).toFixed(2)}" required />
+            </div>
+
+            <div class="form-group">
+              <label>Forma de pagamento</label>
+              <select id="baixaForma" required>
+                <option>PIX</option>
+                <option>Cartão de Crédito</option>
+                <option>Cartão de Débito</option>
+                <option>Dinheiro</option>
+                <option>Swile</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Data do pagamento</label>
+              <input id="baixaData" type="date" value="${hojeISO()}" required />
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-green">Confirmar pagamento</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal("Baixar mensalidade", "Ao baixar, a próxima mensalidade será gerada automaticamente", html, true);
+    }
+
+    async function confirmarBaixaMensalidade(event, id) {
+      event.preventDefault();
+
+      const m = mensalidadesCache.find(x => x.id === id);
+      if (!m) return;
+
+      const valor = Number(document.getElementById("baixaValor").value || 0);
+      const forma = document.getElementById("baixaForma").value;
+      const dataPag = document.getElementById("baixaData").value;
+
+      const { error } = await client
+        .from("mensalidades")
+        .update({
+          status: "Pago",
+          data_pagamento: dataPag,
+          forma_pagamento: forma,
+          usuario_baixa_id: usuarioLogado.id,
+          atualizado_em: new Date().toISOString()
+        })
+        .eq("id", id);
+
+      if (error) {
+        mostrarToast("Erro ao baixar mensalidade: " + error.message, "error");
+        return;
+      }
+
+      await client.from("pagamentos").insert({
+        aluno_id: m.aluno_id,
+        origem: "Mensalidade",
+        referencia_id: id,
+        descricao: `${m.descricao} ${String(m.competencia_mes).padStart(2,"0")}/${m.competencia_ano}`,
+        valor,
+        forma_pagamento: forma,
+        data_pagamento: dataPag,
+        usuario_id: usuarioLogado.id
+      });
+
+      await client.rpc("criar_proxima_mensalidade", { p_mensalidade_id: id });
+
+      await registrarLog(m.aluno_id, "Mensalidades", "Pagamento", `Mensalidade paga via ${forma}.`);
+
+      fecharModal();
+      await atualizarMensalidadesVencidas();
+      await carregarBase();
+      await abrirTela(telaAtual);
+      mostrarToast("Pagamento registrado e próxima mensalidade gerada.");
+    }
+
+    async function cancelarMensalidade(id) {
+      if (!confirm("Deseja cancelar esta mensalidade?")) return;
+
+      const { error } = await client
+        .from("mensalidades")
+        .update({ status: "Cancelado", atualizado_em: new Date().toISOString() })
+        .eq("id", id);
+
+      if (error) {
+        mostrarToast("Erro ao cancelar: " + error.message, "error");
+        return;
+      }
+
+      await carregarBase();
+      await abrirTela("mensalidades");
+      mostrarToast("Mensalidade cancelada.");
+    }
+
+    function mensagemWhatsappMensalidade(id) {
+      const m = mensalidadesCache.find(x => x.id === id);
+      if (!m) return;
+
+      const aluno = m.alunos;
+      const telefone = limparTelefone(aluno?.telefone || "");
+
+      const msg = `Olá, ${aluno?.nome || ""}! Tudo bem? Aqui é da LD Extreme Academia.%0A%0A` +
+        `Passando para lembrar da sua mensalidade:%0A` +
+        `Competência: ${String(m.competencia_mes).padStart(2,"0")}/${m.competencia_ano}%0A` +
+        `Vencimento: ${formatarData(m.data_vencimento)}%0A` +
+        `Valor: ${BRL.format(Number(m.valor || 0))}%0A%0A` +
+        `Qualquer dúvida, estamos à disposição.`;
+
+      if (telefone) {
+        window.open(`https://wa.me/${telefone}?text=${msg}`, "_blank");
+      } else {
+        navigator.clipboard.writeText(decodeURIComponent(msg.replaceAll("%0A", "\n")));
+        mostrarToast("Mensagem copiada. O aluno não possui telefone cadastrado.");
+      }
+    }
+
+    function limparTelefone(tel) {
+      const limpo = String(tel || "").replace(/\D/g, "");
+      if (!limpo) return "";
+      if (limpo.startsWith("55")) return limpo;
+      return "55" + limpo;
+    }
+
+    async function renderInadimplencia() {
+      await atualizarMensalidadesVencidas();
+      await carregarBase();
+
+      const vencidas = mensalidadesCache.filter(m => m.status === "Vencido");
+
+      const html = `
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Alunos em atraso</h2>
+              <p>Tolerância configurada: 5 dias após o vencimento</p>
+            </div>
+          </div>
+
+          ${
+            vencidas.length
+              ? `
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Aluno</th>
+                        <th>Telefone</th>
+                        <th>Vencimento</th>
+                        <th>Dias em atraso</th>
+                        <th>Valor</th>
+                        <th>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${vencidas.map(m => {
+                        const dias = calcularDiasAtraso(m.data_vencimento);
+                        return `
+                          <tr>
+                            <td><strong>${m.alunos?.nome || "-"}</strong><br><span style="color:var(--muted);font-size:12px;">${m.alunos?.codigo || ""}</span></td>
+                            <td>${m.alunos?.telefone || "-"}</td>
+                            <td>${formatarData(m.data_vencimento)}</td>
+                            <td><span class="badge red">${dias} dias</span></td>
+                            <td>${BRL.format(Number(m.valor || 0))}</td>
+                            <td>
+                              <div class="actions">
+                                <button class="btn btn-small btn-green" onclick="baixarMensalidade('${m.id}')">Baixar</button>
+                                <button class="btn btn-small btn-blue" onclick="mensagemWhatsappMensalidade('${m.id}')">WhatsApp</button>
+                              </div>
+                            </td>
+                          </tr>
+                        `;
+                      }).join("")}
+                    </tbody>
+                  </table>
+                </div>
+              `
+              : `<div class="empty">Nenhum aluno em atraso no momento.</div>`
+          }
+        </div>
+      `;
+
+      document.getElementById("telaInadimplencia").innerHTML = html;
+    }
+
+    function calcularDiasAtraso(dataVencimento) {
+      const venc = new Date(dataVencimento + "T00:00:00");
+      const hoje = new Date();
+      const diff = Math.floor((hoje - venc) / (1000 * 60 * 60 * 24));
+      return Math.max(0, diff);
+    }
+
+    async function renderContaAluno() {
+      await carregarBase();
+
+      const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+        <option value="${a.id}">${a.codigo} - ${a.nome}</option>
+      `).join("");
+
+      const html = `
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Conta do aluno</h2>
+              <p>Veja mensalidades, produtos e serviços separados por item</p>
+            </div>
+          </div>
+
+          <div class="toolbar">
+            <select id="contaAlunoSelect" onchange="carregarContaAlunoSelecionado()">
+              <option value="">Selecione um aluno</option>
+              ${alunoOptions}
+            </select>
+
+            <button class="btn btn-primary" onclick="abrirModalLancamentoConta()">+ Lançamento</button>
+          </div>
+
+          <div id="contaAlunoResultado" class="empty">Selecione um aluno para visualizar a conta.</div>
+        </div>
+      `;
+
+      document.getElementById("telaContaAluno").innerHTML = html;
+    }
+
+    async function carregarContaAlunoSelecionado() {
+      const alunoId = document.getElementById("contaAlunoSelect").value;
+      const box = document.getElementById("contaAlunoResultado");
+
+      if (!alunoId) {
+        box.className = "empty";
+        box.innerHTML = "Selecione um aluno para visualizar a conta.";
+        return;
+      }
+
+      const aluno = alunosCache.find(a => a.id === alunoId);
+
+      const { data: mensalidades } = await client
+        .from("mensalidades")
+        .select("*")
+        .eq("aluno_id", alunoId)
+        .in("status", ["Pendente", "Vencido"])
+        .order("data_vencimento", { ascending: true });
+
+      const { data: lancamentos } = await client
+        .from("conta_aluno_lancamentos")
+        .select("*")
+        .eq("aluno_id", alunoId)
+        .eq("status", "Em Aberto")
+        .order("criado_em", { ascending: true });
+
+      const itensMensalidade = (mensalidades || []).map(m => ({
+        tipo: "Mensalidade",
+        id: m.id,
+        descricao: `Mensalidade ${String(m.competencia_mes).padStart(2,"0")}/${m.competencia_ano}`,
+        data: m.data_vencimento,
+        valor: Number(m.valor || 0),
+        status: m.status,
+        acao: `<button class="btn btn-small btn-green" onclick="baixarMensalidade('${m.id}')">Baixar</button>`
+      }));
+
+      const itensConta = (lancamentos || []).map(l => ({
+        tipo: l.tipo,
+        id: l.id,
+        descricao: l.descricao,
+        data: l.data_lancamento,
+        valor: Number(l.valor_total || 0),
+        status: l.status,
+        acao: `<button class="btn btn-small btn-green" onclick="baixarLancamentoConta('${l.id}', '${alunoId}')">Baixar</button>`
+      }));
+
+      const todos = [...itensMensalidade, ...itensConta];
+      const total = todos.reduce((s, i) => s + i.valor, 0);
+
+      box.className = "";
+
+      if (!todos.length) {
+        box.innerHTML = `<div class="empty">${aluno?.nome || "Aluno"} não possui débitos em aberto.</div>`;
+        return;
+      }
+
+      box.innerHTML = `
+        <div class="panel" style="margin:0;">
+          <div class="panel-header">
+            <div>
+              <h2>${aluno?.nome || "Aluno"}</h2>
+              <p>${aluno?.codigo || ""} | ${aluno?.telefone || ""}</p>
+            </div>
+            <button class="btn btn-blue" onclick="mensagemWhatsappContaAluno('${alunoId}')">Gerar WhatsApp</button>
+          </div>
+
+          <div class="debt-list">
+            ${todos.map(item => `
+              <div class="debt-item">
+                <div>
+                  <strong>${item.descricao}</strong>
+                  <span>${item.tipo} | ${formatarData(item.data)} | ${item.status}</span>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                  <strong>${BRL.format(item.valor)}</strong>
+                  ${item.acao}
+                </div>
+              </div>
+            `).join("")}
+          </div>
+
+          <div class="total-box">
+            <span>Total em aberto</span>
+            <strong>${BRL.format(total)}</strong>
+          </div>
+        </div>
+      `;
+    }
+
+    function abrirModalLancamentoConta() {
+      const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+        <option value="${a.id}">${a.codigo} - ${a.nome}</option>
+      `).join("");
+
+      const html = `
+        <form onsubmit="salvarLancamentoConta(event)">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Aluno</label>
+              <select id="lancAluno" required>
+                <option value="">Selecione</option>
+                ${alunoOptions}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Tipo</label>
+              <select id="lancTipo">
+                <option>Produto</option>
+                <option>Serviço</option>
+                <option>Ajuste</option>
+              </select>
+            </div>
+
+            <div class="form-group span-2">
+              <label>Descrição</label>
+              <input id="lancDescricao" required placeholder="Ex: Whey, Creatina, Água..." />
+            </div>
+
+            <div class="form-group">
+              <label>Quantidade</label>
+              <input id="lancQuantidade" type="number" min="1" value="1" required />
+            </div>
+
+            <div class="form-group">
+              <label>Valor unitário</label>
+              <input id="lancValorUnitario" type="number" step="0.01" required />
+            </div>
+
+            <div class="form-group span-2">
+              <label>Observações</label>
+              <input id="lancObs" />
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Lançar na conta</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal("Novo lançamento", "Produto, serviço ou ajuste na conta do aluno", html, true);
+    }
+
+    async function salvarLancamentoConta(event) {
+      event.preventDefault();
+
+      const alunoId = document.getElementById("lancAluno").value;
+      const qtd = Number(document.getElementById("lancQuantidade").value || 1);
+      const valor = Number(document.getElementById("lancValorUnitario").value || 0);
+
+      const payload = {
+        aluno_id: alunoId,
+        tipo: document.getElementById("lancTipo").value,
+        descricao: document.getElementById("lancDescricao").value.trim(),
+        quantidade: qtd,
+        valor_unitario: valor,
+        valor_total: qtd * valor,
+        status: "Em Aberto",
+        usuario_id: usuarioLogado.id,
+        observacoes: document.getElementById("lancObs").value.trim()
+      };
+
+      const { error } = await client.from("conta_aluno_lancamentos").insert(payload);
+
+      if (error) {
+        mostrarToast("Erro ao lançar: " + error.message, "error");
+        return;
+      }
+
+      await registrarLog(alunoId, "Conta do Aluno", "Lançamento", `${payload.descricao} lançado na conta.`);
+      fecharModal();
+      await carregarBase();
+      await abrirTela("contaAluno");
+      document.getElementById("contaAlunoSelect").value = alunoId;
+      await carregarContaAlunoSelecionado();
+      mostrarToast("Lançamento criado.");
+    }
+
+    async function baixarLancamentoConta(id, alunoId) {
+      const html = `
+        <form onsubmit="confirmarBaixaLancamentoConta(event, '${id}', '${alunoId}')">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Forma de pagamento</label>
+              <select id="baixaLancForma" required>
+                <option>PIX</option>
+                <option>Cartão de Crédito</option>
+                <option>Cartão de Débito</option>
+                <option>Dinheiro</option>
+                <option>Swile</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Data do pagamento</label>
+              <input id="baixaLancData" type="date" value="${hojeISO()}" required />
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-green">Confirmar baixa</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal("Baixar lançamento", "Confirmar pagamento do item", html, true);
+    }
+
+    async function confirmarBaixaLancamentoConta(event, id, alunoId) {
+      event.preventDefault();
+
+      const { data: lanc } = await client
+        .from("conta_aluno_lancamentos")
+        .select("*")
+        .eq("id", id)
+        .single();
+
+      if (!lanc) {
+        mostrarToast("Lançamento não encontrado.", "error");
+        return;
+      }
+
+      const forma = document.getElementById("baixaLancForma").value;
+      const data = document.getElementById("baixaLancData").value;
+
+      const { error } = await client
+        .from("conta_aluno_lancamentos")
+        .update({
+          status: "Pago",
+          data_pagamento: data,
+          atualizado_em: new Date().toISOString()
+        })
+        .eq("id", id);
+
+      if (error) {
+        mostrarToast("Erro ao baixar lançamento: " + error.message, "error");
+        return;
+      }
+
+      await client.from("pagamentos").insert({
+        aluno_id: alunoId,
+        origem: "Conta do Aluno",
+        referencia_id: id,
+        descricao: lanc.descricao,
+        valor: Number(lanc.valor_total || 0),
+        forma_pagamento: forma,
+        data_pagamento: data,
+        usuario_id: usuarioLogado.id
+      });
+
+      await registrarLog(alunoId, "Conta do Aluno", "Pagamento", `${lanc.descricao} pago via ${forma}.`);
+
+      fecharModal();
+      await carregarBase();
+      await abrirTela("contaAluno");
+      document.getElementById("contaAlunoSelect").value = alunoId;
+      await carregarContaAlunoSelecionado();
+      mostrarToast("Lançamento pago.");
+    }
+
+    async function mensagemWhatsappContaAluno(alunoId) {
+      const aluno = alunosCache.find(a => a.id === alunoId);
+
+      const { data: mensalidades } = await client
+        .from("mensalidades")
+        .select("*")
+        .eq("aluno_id", alunoId)
+        .in("status", ["Pendente", "Vencido"]);
+
+      const { data: lancamentos } = await client
+        .from("conta_aluno_lancamentos")
+        .select("*")
+        .eq("aluno_id", alunoId)
+        .eq("status", "Em Aberto");
+
+      let linhas = [];
+      let total = 0;
+
+      (mensalidades || []).forEach(m => {
+        const valor = Number(m.valor || 0);
+        total += valor;
+        linhas.push(`- Mensalidade ${String(m.competencia_mes).padStart(2,"0")}/${m.competencia_ano}: ${BRL.format(valor)}`);
+      });
+
+      (lancamentos || []).forEach(l => {
+        const valor = Number(l.valor_total || 0);
+        total += valor;
+        linhas.push(`- ${l.descricao}: ${BRL.format(valor)}`);
+      });
+
+      const texto =
+        `Olá, ${aluno?.nome || ""}! Tudo bem? Aqui é da LD Extreme Academia.\n\n` +
+        `Segue o resumo da sua conta em aberto:\n\n` +
+        `${linhas.join("\n")}\n\n` +
+        `Total em aberto: ${BRL.format(total)}\n\n` +
+        `Qualquer dúvida, estamos à disposição.`;
+
+      const telefone = limparTelefone(aluno?.telefone || "");
+      if (telefone) {
+        window.open(`https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`, "_blank");
+      } else {
+        navigator.clipboard.writeText(texto);
+        mostrarToast("Mensagem copiada. O aluno não possui telefone cadastrado.");
+      }
+    }
+
+    async function renderTreinos() {
+      await carregarBase();
+
+      const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+        <option value="${a.id}">${a.codigo} - ${a.nome}</option>
+      `).join("");
+
+      const html = `
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Treinos</h2>
+              <p>Professor Eduardo ou Leonardo pode cadastrar treinos por aluno</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalTreino()">+ Novo treino</button>
+          </div>
+
+          <div class="toolbar">
+            <select id="treinoAlunoFiltro" onchange="carregarTreinosAluno()">
+              <option value="">Selecione um aluno</option>
+              ${alunoOptions}
+            </select>
+          </div>
+
+          <div id="treinosResultado" class="empty">Selecione um aluno para visualizar os treinos.</div>
+        </div>
+      `;
+
+      document.getElementById("telaTreinos").innerHTML = html;
+    }
+
+    async function carregarTreinosAluno() {
+      const alunoId = document.getElementById("treinoAlunoFiltro").value;
+      const box = document.getElementById("treinosResultado");
+
+      if (!alunoId) {
+        box.className = "empty";
+        box.innerHTML = "Selecione um aluno para visualizar os treinos.";
+        return;
+      }
+
+      const aluno = alunosCache.find(a => a.id === alunoId);
+
+      const { data: treinos } = await client
+        .from("treinos")
+        .select("*")
+        .eq("aluno_id", alunoId)
+        .order("criado_em", { ascending: false });
+
+      box.className = "";
+
+      if (!treinos?.length) {
+        box.innerHTML = `<div class="empty">Nenhum treino cadastrado para ${aluno?.nome || "este aluno"}.</div>`;
+        return;
+      }
+
+      let html = `
+        <div class="panel" style="margin:0;">
+          <div class="panel-header">
+            <div>
+              <h2>${aluno?.nome || "Aluno"}</h2>
+              <p>Senha do treino: ${aluno?.senha_treino || "-"} | Link: ${window.location.origin}${window.location.pathname}?treino=${aluno?.codigo}</p>
+            </div>
+            <button class="btn btn-blue" onclick="copiarLinkTreino('${aluno?.codigo}')">Copiar link</button>
+          </div>
+      `;
+
+      for (const treino of treinos) {
+        const { data: exercicios } = await client
+          .from("treino_exercicios")
+          .select("*")
+          .eq("treino_id", treino.id)
+          .order("sessao")
+          .order("ordem");
+
+        html += `
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>${treino.titulo}</h2>
+                <p>Professor: ${treino.professor} | ${treino.ativo ? "Ativo" : "Inativo"}</p>
+              </div>
+              <div class="actions">
+                <button class="btn btn-small btn-primary" onclick="abrirModalExercicio('${treino.id}')">+ Exercício</button>
+                <button class="btn btn-small btn-danger" onclick="excluirTreino('${treino.id}')">Excluir</button>
+              </div>
+            </div>
+
+            ${
+              exercicios?.length
+                ? exercicios.map(e => `
+                    <div class="exercise-card">
+                      <h4>${e.sessao} - ${e.exercicio}</h4>
+                      <div class="exercise-meta">
+                        <span>Séries: ${e.series || "-"}</span>
+                        <span>Repetições: ${e.repeticoes || "-"}</span>
+                        <span>Carga: ${e.carga || "-"}</span>
+                        <span>Ordem: ${e.ordem || "-"}</span>
+                      </div>
+                      ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
+                    </div>
+                  `).join("")
+                : `<div class="empty">Nenhum exercício cadastrado neste treino.</div>`
+            }
+          </div>
+        `;
+      }
+
+      html += `</div>`;
+      box.innerHTML = html;
+    }
+
+    function abrirModalTreino() {
+      const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+        <option value="${a.id}">${a.codigo} - ${a.nome}</option>
+      `).join("");
+
+      const html = `
+        <form onsubmit="salvarTreino(event)">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Aluno</label>
+              <select id="treinoAluno" required>
+                <option value="">Selecione</option>
+                ${alunoOptions}
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Professor</label>
+              <select id="treinoProfessor" required>
+                <option>Eduardo</option>
+                <option>Leonardo</option>
+              </select>
+            </div>
+
+            <div class="form-group span-2">
+              <label>Título</label>
+              <input id="treinoTitulo" placeholder="Ex: Treino de hipertrofia" required />
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select id="treinoAtivo">
+                <option value="true">Ativo</option>
+                <option value="false">Inativo</option>
+              </select>
+            </div>
+
+            <div class="form-group span-3">
+              <label>Descrição</label>
+              <textarea id="treinoDescricao"></textarea>
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar treino</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal("Novo treino", "Depois de criar o treino, adicione os exercícios", html);
+    }
+
+    async function salvarTreino(event) {
+      event.preventDefault();
+
+      const alunoId = document.getElementById("treinoAluno").value;
+
+      const { error } = await client.from("treinos").insert({
+        aluno_id: alunoId,
+        professor: document.getElementById("treinoProfessor").value,
+        titulo: document.getElementById("treinoTitulo").value.trim(),
+        descricao: document.getElementById("treinoDescricao").value.trim(),
+        ativo: document.getElementById("treinoAtivo").value === "true"
+      });
+
+      if (error) {
+        mostrarToast("Erro ao salvar treino: " + error.message, "error");
+        return;
+      }
+
+      await registrarLog(alunoId, "Treinos", "Cadastro", "Treino criado.");
+      fecharModal();
+      await abrirTela("treinos");
+      document.getElementById("treinoAlunoFiltro").value = alunoId;
+      await carregarTreinosAluno();
+      mostrarToast("Treino criado.");
+    }
+
+    function abrirModalExercicio(treinoId) {
+      const html = `
+        <form onsubmit="salvarExercicio(event, '${treinoId}')">
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Sessão</label>
+              <select id="exSessao">
+                <option>Treino A</option>
+                <option>Treino B</option>
+                <option>Treino C</option>
+                <option>Treino D</option>
+                <option>Outro</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Ordem</label>
+              <input id="exOrdem" type="number" value="1" />
+            </div>
+
+            <div class="form-group">
+              <label>Exercício</label>
+              <input id="exNome" required placeholder="Ex: Supino reto" />
+            </div>
+
+            <div class="form-group">
+              <label>Séries</label>
+              <input id="exSeries" placeholder="Ex: 4" />
+            </div>
+
+            <div class="form-group">
+              <label>Repetições</label>
+              <input id="exRepeticoes" placeholder="Ex: 10 a 12" />
+            </div>
+
+            <div class="form-group">
+              <label>Carga</label>
+              <input id="exCarga" placeholder="Ex: 20kg" />
+            </div>
+
+            <div class="form-group span-3">
+              <label>Observações</label>
+              <textarea id="exObs"></textarea>
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Adicionar exercício</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal("Novo exercício", "Adicionar exercício ao treino", html);
+    }
+
+    async function salvarExercicio(event, treinoId) {
+      event.preventDefault();
+
+      const { error } = await client.from("treino_exercicios").insert({
+        treino_id: treinoId,
+        sessao: document.getElementById("exSessao").value,
+        ordem: Number(document.getElementById("exOrdem").value || 1),
+        exercicio: document.getElementById("exNome").value.trim(),
+        series: document.getElementById("exSeries").value.trim(),
+        repeticoes: document.getElementById("exRepeticoes").value.trim(),
+        carga: document.getElementById("exCarga").value.trim(),
+        observacoes: document.getElementById("exObs").value.trim()
+      });
+
+      if (error) {
+        mostrarToast("Erro ao adicionar exercício: " + error.message, "error");
+        return;
+      }
+
+      fecharModal();
+      await carregarTreinosAluno();
+      mostrarToast("Exercício adicionado.");
+    }
+
+    async function excluirTreino(treinoId) {
+      if (!confirm("Deseja excluir este treino e seus exercícios?")) return;
+
+      const { error } = await client.from("treinos").delete().eq("id", treinoId);
+
+      if (error) {
+        mostrarToast("Erro ao excluir treino: " + error.message, "error");
+        return;
+      }
+
+      await carregarTreinosAluno();
+      mostrarToast("Treino excluído.");
+    }
+
+    function copiarLinkTreino(codigo) {
+      const link = `${window.location.origin}${window.location.pathname}?treino=${codigo}`;
+      navigator.clipboard.writeText(link);
+      mostrarToast("Link do treino copiado.");
+    }
+
+    async function acessarTreinoPublico() {
+      const codigo = document.getElementById("publicCodigoAluno").value.trim().toUpperCase();
+      const senha = document.getElementById("publicSenhaTreino").value.trim();
+
+      if (!codigo || !senha) {
+        mostrarToast("Informe código e senha.", "error");
+        return;
+      }
+
+      const { data: aluno, error } = await client
+        .from("alunos")
+        .select("*")
+        .eq("codigo", codigo)
+        .eq("senha_treino", senha)
+        .eq("ativo", true)
+        .single();
+
+      if (error || !aluno) {
+        mostrarToast("Código ou senha inválidos.", "error");
+        return;
+      }
+
+      const { data: treinos } = await client
+        .from("treinos")
+        .select("*")
+        .eq("aluno_id", aluno.id)
+        .eq("ativo", true)
+        .order("criado_em", { ascending: false });
+
+      let html = `
+        <div class="panel-header">
+          <div>
+            <h2>${aluno.nome}</h2>
+            <p>${aluno.codigo} | Treino atualizado da LD Extreme Academia</p>
+          </div>
+        </div>
+      `;
+
+      if (!treinos?.length) {
+        html += `<div class="empty">Nenhum treino ativo cadastrado no momento.</div>`;
+      } else {
+        for (const treino of treinos) {
+          const { data: exercicios } = await client
+            .from("treino_exercicios")
+            .select("*")
+            .eq("treino_id", treino.id)
+            .order("sessao")
+            .order("ordem");
+
+          html += `
+            <div class="panel">
+              <div class="panel-header">
+                <div>
+                  <h2>${treino.titulo}</h2>
+                  <p>Professor: ${treino.professor}</p>
+                </div>
+              </div>
+
+              ${
+                exercicios?.length
+                  ? exercicios.map(e => `
+                      <div class="exercise-card">
+                        <h4>${e.sessao} - ${e.exercicio}</h4>
+                        <div class="exercise-meta">
+                          <span>Séries: ${e.series || "-"}</span>
+                          <span>Repetições: ${e.repeticoes || "-"}</span>
+                          <span>Carga: ${e.carga || "-"}</span>
+                        </div>
+                        ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
+                      </div>
+                    `).join("")
+                  : `<div class="empty">Sem exercícios cadastrados.</div>`
+              }
+            </div>
+          `;
+        }
+      }
+
+      document.getElementById("treinoLoginBox").classList.add("hidden");
+      document.getElementById("publicTreinoConteudo").classList.remove("hidden");
+      document.getElementById("publicTreinoConteudo").innerHTML = html;
+    }
+
+    async function renderFinanceiro() {
+      if (!usuarioEhAdmin()) return;
+
+      const hoje = new Date();
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+      const primeiroDia = `${ano}-${mes}-01`;
+
+      const { data: pagamentos } = await client
+        .from("pagamentos")
+        .select("*")
+        .gte("data_pagamento", primeiroDia)
+        .order("data_pagamento", { ascending: false });
+
+      const total = (pagamentos || []).reduce((s, p) => s + Number(p.valor || 0), 0);
+      const mensalidades = (pagamentos || []).filter(p => p.origem === "Mensalidade").reduce((s, p) => s + Number(p.valor || 0), 0);
+      const conta = (pagamentos || []).filter(p => p.origem === "Conta do Aluno").reduce((s, p) => s + Number(p.valor || 0), 0);
+
+      const html = `
+        <div class="cards">
+          <div class="card green">
+            <div class="kpi-label">Total recebido no mês</div>
+            <div class="kpi-value">${BRL.format(total)}</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Mensalidades</div>
+            <div class="kpi-value">${BRL.format(mensalidades)}</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Conta do aluno</div>
+            <div class="kpi-value">${BRL.format(conta)}</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Pagamentos do mês</h2>
+              <p>Somente administrador visualiza estes dados</p>
+            </div>
+          </div>
+
+          ${
+            pagamentos?.length
+              ? `
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Origem</th>
+                        <th>Descrição</th>
+                        <th>Forma</th>
+                        <th>Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${pagamentos.map(p => `
+                        <tr>
+                          <td>${formatarData(p.data_pagamento)}</td>
+                          <td>${p.origem}</td>
+                          <td>${p.descricao || "-"}</td>
+                          <td>${p.forma_pagamento}</td>
+                          <td>${BRL.format(Number(p.valor || 0))}</td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                </div>
+              `
+              : `<div class="empty">Nenhum pagamento registrado neste mês.</div>`
+          }
+        </div>
+      `;
+
+      document.getElementById("telaFinanceiro").innerHTML = html;
+    }
+
+    async function renderPlanos() {
+      await carregarBase();
+
+      const html = `
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Planos da academia</h2>
+              <p>Valores configuráveis</p>
+            </div>
+            <button class="btn btn-primary" onclick="abrirModalPlano()">+ Novo plano</button>
+          </div>
+
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Plano</th>
+                  <th>Descrição</th>
+                  <th>Vezes/Semana</th>
+                  <th>Valor</th>
+                  <th>Status</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${planosCache.map(p => `
+                  <tr>
+                    <td><strong>${p.nome}</strong></td>
+                    <td>${p.descricao || "-"}</td>
+                    <td>${p.vezes_semana || "-"}</td>
+                    <td>${BRL.format(Number(p.valor || 0))}</td>
+                    <td>${p.ativo ? `<span class="badge green">Ativo</span>` : `<span class="badge gray">Inativo</span>`}</td>
+                    <td>
+                      <button class="btn btn-small btn-yellow" onclick="abrirModalPlano('${p.id}')">Editar</button>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("telaPlanos").innerHTML = html;
+    }
+
+    function abrirModalPlano(id = null) {
+      const p = id ? planosCache.find(x => x.id === id) : null;
+
+      const html = `
+        <form onsubmit="salvarPlano(event, '${id || ""}')">
+          <div class="form-grid">
+            <div class="form-group span-2">
+              <label>Nome do plano</label>
+              <input id="planoNome" required value="${p?.nome || ""}" />
+            </div>
+
+            <div class="form-group">
+              <label>Vezes por semana</label>
+              <input id="planoVezes" type="number" min="1" value="${p?.vezes_semana || ""}" />
+            </div>
+
+            <div class="form-group">
+              <label>Valor</label>
+              <input id="planoValor" type="number" step="0.01" required value="${p?.valor || ""}" />
+            </div>
+
+            <div class="form-group">
+              <label>Status</label>
+              <select id="planoAtivo">
+                <option value="true" ${p?.ativo !== false ? "selected" : ""}>Ativo</option>
+                <option value="false" ${p?.ativo === false ? "selected" : ""}>Inativo</option>
+              </select>
+            </div>
+
+            <div class="form-group span-3">
+              <label>Descrição</label>
+              <input id="planoDescricao" value="${p?.descricao || ""}" />
+            </div>
+          </div>
+
+          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+            <button type="submit" class="btn btn-primary">Salvar plano</button>
+          </div>
+        </form>
+      `;
+
+      abrirModal(id ? "Editar plano" : "Novo plano", "Configuração dos planos mensais", html, true);
+    }
+
+    async function salvarPlano(event, id) {
+      event.preventDefault();
+
+      const payload = {
+        nome: document.getElementById("planoNome").value.trim(),
+        descricao: document.getElementById("planoDescricao").value.trim(),
+        vezes_semana: Number(document.getElementById("planoVezes").value || 0),
+        valor: Number(document.getElementById("planoValor").value || 0),
+        ativo: document.getElementById("planoAtivo").value === "true"
+      };
+
+      let res;
+
+      if (id) {
+        res = await client.from("planos").update(payload).eq("id", id);
+      } else {
+        res = await client.from("planos").insert(payload);
+      }
+
+      if (res.error) {
+        mostrarToast("Erro ao salvar plano: " + res.error.message, "error");
+        return;
+      }
+
+      fecharModal();
+      await carregarBase();
+      await abrirTela("planos");
+      mostrarToast("Plano salvo.");
+    }
+
+    async function registrarLog(alunoId, modulo, acao, descricao) {
+      await client.from("logs_sistema").insert({
+        usuario_id: usuarioLogado?.id || null,
+        aluno_id: alunoId || null,
+        modulo,
+        acao,
+        descricao
+      });
+    }
+  </script>
+</body>
+</html>
