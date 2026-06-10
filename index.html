@@ -1108,6 +1108,9 @@
 
       await atualizarMensalidadesVencidas();
       await carregarBase();
+
+      console.log("Planos carregados:", planosCache);
+
       abrirTela("dashboard");
     }
 
@@ -1270,7 +1273,7 @@
   alunosCache = alunosRes.data || [];
   mensalidadesCache = mensalidadesRes.data || [];
   produtosCache = produtosRes.data || [];
- }
+}
 
     async function atualizarMensalidadesVencidas() {
       await client.rpc("atualizar_mensalidades_vencidas");
@@ -1521,13 +1524,13 @@
 
     function abrirModalAluno(id = null) {
       const aluno = id ? alunosCache.find(a => a.id === id) : null;
-
-      const planoOptions = planosCache.map(p => `
-        <option value="${p.id}" ${aluno?.plano_id === p.id ? "selected" : ""}>
-          ${p.nome} - ${BRL.format(Number(p.valor))}
-        </option>
-      `).join("");
-
+       const planoOptions = planosCache
+  .filter(p => p.ativo !== false)
+  .map(p => `
+    <option value="${p.id}" ${aluno?.plano_id === p.id ? "selected" : ""}>
+      ${p.nome} - ${BRL.format(Number(p.valor || 0))}
+    </option>
+  `).join("");
       const html = `
         <form onsubmit="salvarAluno(event, '${id || ""}')">
           <div class="form-grid">
