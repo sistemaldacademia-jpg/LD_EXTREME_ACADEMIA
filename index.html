@@ -3277,19 +3277,29 @@ async function acessarTreinoPublico() {
     .eq("codigo", codigo)
     .eq("senha_treino", senha)
     .eq("ativo", true)
-    .single();
+    .maybeSingle();
 
-  if (error || !aluno) {
+  if (error) {
+    mostrarToast("Erro ao buscar aluno: " + error.message, "error");
+    return;
+  }
+
+  if (!aluno) {
     mostrarToast("Código ou senha inválidos.", "error");
     return;
   }
 
-  const { data: treinos } = await client
+  const { data: treinos, error: erroTreinos } = await client
     .from("treinos")
     .select("*")
     .eq("aluno_id", aluno.id)
     .eq("ativo", true)
     .order("criado_em", { ascending: false });
+
+  if (erroTreinos) {
+    mostrarToast("Erro ao buscar treinos: " + erroTreinos.message, "error");
+    return;
+  }
 
   let html = `
     <div style="text-align:center;margin-bottom:18px;">
@@ -3314,12 +3324,17 @@ async function acessarTreinoPublico() {
     html += `<div class="empty">Nenhum treino ativo cadastrado no momento.</div>`;
   } else {
     for (const treino of treinos) {
-      const { data: exercicios } = await client
+      const { data: exercicios, error: erroExercicios } = await client
         .from("treino_exercicios")
         .select("*")
         .eq("treino_id", treino.id)
         .order("sessao")
         .order("ordem");
+
+      if (erroExercicios) {
+        mostrarToast("Erro ao buscar exercícios: " + erroExercicios.message, "error");
+        return;
+      }
 
       html += renderFichaTreinoAluno(aluno, treino, exercicios || []);
     }
