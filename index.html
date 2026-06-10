@@ -948,8 +948,6 @@
      <section id="telaEstoque" class="hidden"></section>
      <section id="telaVendas" class="hidden"></section>
      <section id="telaFinanceiro" class="hidden"></section>
-      
-
       <section id="telaPlanos" class="hidden"></section>
     </main>
   </div>
@@ -1284,10 +1282,6 @@
       const totalAlunos = alunosCache.filter(a => a.ativo).length;
       const atrasados = mensalidadesCache.filter(m => m.status === "Vencido").length;
       const pendentes = mensalidadesCache.filter(m => m.status === "Pendente").length;
-      const produtosBaixo = produtosCache.filter(p =>
-  p.ativo !== false &&
-  Number(p.quantidade_estoque || 0) <= Number(p.estoque_minimo || 0)
-).length;
       const produtosBaixo = produtosCache.filter(p =>
      p.ativo !== false &&
      Number(p.quantidade_estoque || 0) <= Number(p.estoque_minimo || 0)
