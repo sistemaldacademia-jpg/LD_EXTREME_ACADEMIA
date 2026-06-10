@@ -732,6 +732,93 @@
       padding: 14px;
       margin-bottom: 10px;
     }
+    .ficha-treino-box {
+  background: #101010;
+  border: 1px solid rgba(255,255,255,.14);
+}
+
+.ficha-head {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0,1fr));
+  border: 1px solid rgba(255,255,255,.25);
+  border-bottom: 0;
+}
+
+.ficha-head.ficha-full {
+  grid-template-columns: 1fr;
+}
+
+.ficha-head div {
+  border-right: 1px solid rgba(255,255,255,.22);
+  padding: 8px 10px;
+  min-height: 48px;
+}
+
+.ficha-head div:last-child {
+  border-right: 0;
+}
+
+.ficha-head strong {
+  display: block;
+  font-size: 11px;
+  color: #bcbcbc;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.ficha-head span {
+  display: block;
+  color: #fff;
+  font-weight: 700;
+}
+
+.treino-section-title {
+  margin-top: 16px;
+  background: rgba(255,255,255,.16);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,.18);
+  text-align: center;
+  padding: 8px;
+  font-weight: 950;
+  text-transform: uppercase;
+  letter-spacing: .05em;
+}
+
+.ficha-table-wrap {
+  border-radius: 0 0 14px 14px;
+}
+
+.ficha-table {
+  min-width: 980px;
+}
+
+.ficha-table th {
+  text-align: center;
+  font-size: 11px;
+}
+
+.ficha-table td {
+  text-align: center;
+}
+
+.ficha-table td:nth-child(2) {
+  text-align: left;
+}
+
+@media (max-width: 760px) {
+  .ficha-head {
+    grid-template-columns: 1fr;
+  }
+
+  .ficha-head div {
+    border-right: 0;
+    border-bottom: 1px solid rgba(255,255,255,.16);
+  }
+
+  .ficha-table {
+    min-width: 900px;
+  }
+}
 
     .exercise-card h4 {
       margin-bottom: 8px;
@@ -2620,374 +2707,636 @@
       }
     }
 
-    async function renderTreinos() {
-      await carregarBase();
+   // ============================================================
+// TREINOS - FICHA PROFISSIONAL LD EXTREME
+// ============================================================
 
-      const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
-        <option value="${a.id}">${a.codigo} - ${a.nome}</option>
-      `).join("");
+async function renderTreinos() {
+  await carregarBase();
 
-      const html = `
-        <div class="panel">
-          <div class="panel-header">
-            <div>
-              <h2>Treinos</h2>
-              <p>Professor Eduardo ou Leonardo pode cadastrar treinos por aluno</p>
-            </div>
-            <button class="btn btn-primary" onclick="abrirModalTreino()">+ Novo treino</button>
-          </div>
+  const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+    <option value="${a.id}">${a.codigo} - ${a.nome}</option>
+  `).join("");
 
-          <div class="toolbar">
-            <select id="treinoAlunoFiltro" onchange="carregarTreinosAluno()">
-              <option value="">Selecione um aluno</option>
-              ${alunoOptions}
-            </select>
-          </div>
-
-          <div id="treinosResultado" class="empty">Selecione um aluno para visualizar os treinos.</div>
+  const html = `
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>Fichas de treino</h2>
+          <p>Modelo profissional com Treino 1, Treino 2, Treino 3 e Treino 4</p>
         </div>
-      `;
+        <button class="btn btn-primary" onclick="abrirModalTreino()">+ Nova ficha</button>
+      </div>
 
-      document.getElementById("telaTreinos").innerHTML = html;
-    }
+      <div class="toolbar">
+        <select id="treinoAlunoFiltro" onchange="carregarTreinosAluno()">
+          <option value="">Selecione um aluno</option>
+          ${alunoOptions}
+        </select>
+      </div>
 
-    async function carregarTreinosAluno() {
-      const alunoId = document.getElementById("treinoAlunoFiltro").value;
-      const box = document.getElementById("treinosResultado");
+      <div id="treinosResultado" class="empty">Selecione um aluno para visualizar as fichas de treino.</div>
+    </div>
+  `;
 
-      if (!alunoId) {
-        box.className = "empty";
-        box.innerHTML = "Selecione um aluno para visualizar os treinos.";
-        return;
-      }
+  document.getElementById("telaTreinos").innerHTML = html;
+}
 
-      const aluno = alunosCache.find(a => a.id === alunoId);
+async function carregarTreinosAluno() {
+  const alunoId = document.getElementById("treinoAlunoFiltro").value;
+  const box = document.getElementById("treinosResultado");
 
-      const { data: treinos } = await client
-        .from("treinos")
-        .select("*")
-        .eq("aluno_id", alunoId)
-        .order("criado_em", { ascending: false });
+  if (!alunoId) {
+    box.className = "empty";
+    box.innerHTML = "Selecione um aluno para visualizar as fichas de treino.";
+    return;
+  }
 
-      box.className = "";
+  const aluno = alunosCache.find(a => a.id === alunoId);
 
-      if (!treinos?.length) {
-        box.innerHTML = `<div class="empty">Nenhum treino cadastrado para ${aluno?.nome || "este aluno"}.</div>`;
-        return;
-      }
+  const { data: treinos, error } = await client
+    .from("treinos")
+    .select("*")
+    .eq("aluno_id", alunoId)
+    .order("criado_em", { ascending: false });
 
-      let html = `
-        <div class="panel" style="margin:0;">
-          <div class="panel-header">
-            <div>
-              <h2>${aluno?.nome || "Aluno"}</h2>
-              <p>Senha do treino: ${aluno?.senha_treino || "-"} | Link: ${window.location.origin}${window.location.pathname}?treino=${aluno?.codigo}</p>
-            </div>
-            <button class="btn btn-blue" onclick="copiarLinkTreino('${aluno?.codigo}')">Copiar link</button>
-          </div>
-      `;
+  if (error) {
+    mostrarToast("Erro ao carregar treinos: " + error.message, "error");
+    return;
+  }
 
-      for (const treino of treinos) {
-        const { data: exercicios } = await client
-          .from("treino_exercicios")
-          .select("*")
-          .eq("treino_id", treino.id)
-          .order("sessao")
-          .order("ordem");
+  box.className = "";
 
-        html += `
-          <div class="panel">
-            <div class="panel-header">
-              <div>
-                <h2>${treino.titulo}</h2>
-                <p>Professor: ${treino.professor} | ${treino.ativo ? "Ativo" : "Inativo"}</p>
-              </div>
-              <div class="actions">
-                <button class="btn btn-small btn-primary" onclick="abrirModalExercicio('${treino.id}')">+ Exercício</button>
-                <button class="btn btn-small btn-danger" onclick="excluirTreino('${treino.id}')">Excluir</button>
-              </div>
-            </div>
+  if (!treinos || !treinos.length) {
+    box.innerHTML = `
+      <div class="empty">
+        Nenhuma ficha cadastrada para ${aluno?.nome || "este aluno"}.
+      </div>
+    `;
+    return;
+  }
 
-            ${
-              exercicios?.length
-                ? exercicios.map(e => `
-                    <div class="exercise-card">
-                      <h4>${e.sessao} - ${e.exercicio}</h4>
-                      <div class="exercise-meta">
-                        <span>Séries: ${e.series || "-"}</span>
-                        <span>Repetições: ${e.repeticoes || "-"}</span>
-                        <span>Carga: ${e.carga || "-"}</span>
-                        <span>Ordem: ${e.ordem || "-"}</span>
-                      </div>
-                      ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
-                    </div>
-                  `).join("")
-                : `<div class="empty">Nenhum exercício cadastrado neste treino.</div>`
-            }
-          </div>
-        `;
-      }
-
-      html += `</div>`;
-      box.innerHTML = html;
-    }
-
-    function abrirModalTreino() {
-      const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
-        <option value="${a.id}">${a.codigo} - ${a.nome}</option>
-      `).join("");
-
-      const html = `
-        <form onsubmit="salvarTreino(event)">
-          <div class="form-grid">
-            <div class="form-group span-2">
-              <label>Aluno</label>
-              <select id="treinoAluno" required>
-                <option value="">Selecione</option>
-                ${alunoOptions}
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Professor</label>
-              <select id="treinoProfessor" required>
-                <option>Eduardo</option>
-                <option>Leonardo</option>
-              </select>
-            </div>
-
-            <div class="form-group span-2">
-              <label>Título</label>
-              <input id="treinoTitulo" placeholder="Ex: Treino de hipertrofia" required />
-            </div>
-
-            <div class="form-group">
-              <label>Status</label>
-              <select id="treinoAtivo">
-                <option value="true">Ativo</option>
-                <option value="false">Inativo</option>
-              </select>
-            </div>
-
-            <div class="form-group span-3">
-              <label>Descrição</label>
-              <textarea id="treinoDescricao"></textarea>
-            </div>
-          </div>
-
-          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
-            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Salvar treino</button>
-          </div>
-        </form>
-      `;
-
-      abrirModal("Novo treino", "Depois de criar o treino, adicione os exercícios", html);
-    }
-
-    async function salvarTreino(event) {
-      event.preventDefault();
-
-      const alunoId = document.getElementById("treinoAluno").value;
-
-      const { error } = await client.from("treinos").insert({
-        aluno_id: alunoId,
-        professor: document.getElementById("treinoProfessor").value,
-        titulo: document.getElementById("treinoTitulo").value.trim(),
-        descricao: document.getElementById("treinoDescricao").value.trim(),
-        ativo: document.getElementById("treinoAtivo").value === "true"
-      });
-
-      if (error) {
-        mostrarToast("Erro ao salvar treino: " + error.message, "error");
-        return;
-      }
-
-      await registrarLog(alunoId, "Treinos", "Cadastro", "Treino criado.");
-      fecharModal();
-      await abrirTela("treinos");
-      document.getElementById("treinoAlunoFiltro").value = alunoId;
-      await carregarTreinosAluno();
-      mostrarToast("Treino criado.");
-    }
-
-    function abrirModalExercicio(treinoId) {
-      const html = `
-        <form onsubmit="salvarExercicio(event, '${treinoId}')">
-          <div class="form-grid">
-            <div class="form-group">
-              <label>Sessão</label>
-              <select id="exSessao">
-                <option>Treino A</option>
-                <option>Treino B</option>
-                <option>Treino C</option>
-                <option>Treino D</option>
-                <option>Outro</option>
-              </select>
-            </div>
-
-            <div class="form-group">
-              <label>Ordem</label>
-              <input id="exOrdem" type="number" value="1" />
-            </div>
-
-            <div class="form-group">
-              <label>Exercício</label>
-              <input id="exNome" required placeholder="Ex: Supino reto" />
-            </div>
-
-            <div class="form-group">
-              <label>Séries</label>
-              <input id="exSeries" placeholder="Ex: 4" />
-            </div>
-
-            <div class="form-group">
-              <label>Repetições</label>
-              <input id="exRepeticoes" placeholder="Ex: 10 a 12" />
-            </div>
-
-            <div class="form-group">
-              <label>Carga</label>
-              <input id="exCarga" placeholder="Ex: 20kg" />
-            </div>
-
-            <div class="form-group span-3">
-              <label>Observações</label>
-              <textarea id="exObs"></textarea>
-            </div>
-          </div>
-
-          <div class="actions" style="justify-content:flex-end;margin-top:16px;">
-            <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
-            <button type="submit" class="btn btn-primary">Adicionar exercício</button>
-          </div>
-        </form>
-      `;
-
-      abrirModal("Novo exercício", "Adicionar exercício ao treino", html);
-    }
-
-    async function salvarExercicio(event, treinoId) {
-      event.preventDefault();
-
-      const { error } = await client.from("treino_exercicios").insert({
-        treino_id: treinoId,
-        sessao: document.getElementById("exSessao").value,
-        ordem: Number(document.getElementById("exOrdem").value || 1),
-        exercicio: document.getElementById("exNome").value.trim(),
-        series: document.getElementById("exSeries").value.trim(),
-        repeticoes: document.getElementById("exRepeticoes").value.trim(),
-        carga: document.getElementById("exCarga").value.trim(),
-        observacoes: document.getElementById("exObs").value.trim()
-      });
-
-      if (error) {
-        mostrarToast("Erro ao adicionar exercício: " + error.message, "error");
-        return;
-      }
-
-      fecharModal();
-      await carregarTreinosAluno();
-      mostrarToast("Exercício adicionado.");
-    }
-
-    async function excluirTreino(treinoId) {
-      if (!confirm("Deseja excluir este treino e seus exercícios?")) return;
-
-      const { error } = await client.from("treinos").delete().eq("id", treinoId);
-
-      if (error) {
-        mostrarToast("Erro ao excluir treino: " + error.message, "error");
-        return;
-      }
-
-      await carregarTreinosAluno();
-      mostrarToast("Treino excluído.");
-    }
-
-    function copiarLinkTreino(codigo) {
-      const link = `${window.location.origin}${window.location.pathname}?treino=${codigo}`;
-      navigator.clipboard.writeText(link);
-      mostrarToast("Link do treino copiado.");
-    }
-
-    async function acessarTreinoPublico() {
-      const codigo = document.getElementById("publicCodigoAluno").value.trim().toUpperCase();
-      const senha = document.getElementById("publicSenhaTreino").value.trim();
-
-      if (!codigo || !senha) {
-        mostrarToast("Informe código e senha.", "error");
-        return;
-      }
-
-      const { data: aluno, error } = await client
-        .from("alunos")
-        .select("*")
-        .eq("codigo", codigo)
-        .eq("senha_treino", senha)
-        .eq("ativo", true)
-        .single();
-
-      if (error || !aluno) {
-        mostrarToast("Código ou senha inválidos.", "error");
-        return;
-      }
-
-      const { data: treinos } = await client
-        .from("treinos")
-        .select("*")
-        .eq("aluno_id", aluno.id)
-        .eq("ativo", true)
-        .order("criado_em", { ascending: false });
-
-      let html = `
-        <div class="panel-header">
-          <div>
-            <h2>${aluno.nome}</h2>
-            <p>${aluno.codigo} | Treino atualizado da LD Extreme Academia</p>
-          </div>
+  let html = `
+    <div class="panel" style="margin:0;">
+      <div class="panel-header">
+        <div>
+          <h2>${aluno?.nome || "Aluno"}</h2>
+          <p>
+            ${aluno?.codigo || ""} |
+            Senha do treino: <strong>${aluno?.senha_treino || "-"}</strong>
+          </p>
         </div>
-      `;
+        <button class="btn btn-blue" onclick="copiarLinkTreino('${aluno?.codigo}')">Copiar link do aluno</button>
+      </div>
+  `;
 
-      if (!treinos?.length) {
-        html += `<div class="empty">Nenhum treino ativo cadastrado no momento.</div>`;
-      } else {
-        for (const treino of treinos) {
-          const { data: exercicios } = await client
-            .from("treino_exercicios")
-            .select("*")
-            .eq("treino_id", treino.id)
-            .order("sessao")
-            .order("ordem");
+  for (const treino of treinos) {
+    const { data: exercicios } = await client
+      .from("treino_exercicios")
+      .select("*")
+      .eq("treino_id", treino.id)
+      .order("sessao")
+      .order("ordem");
 
-          html += `
-            <div class="panel">
-              <div class="panel-header">
-                <div>
-                  <h2>${treino.titulo}</h2>
-                  <p>Professor: ${treino.professor}</p>
-                </div>
-              </div>
+    html += renderFichaTreinoProfessor(aluno, treino, exercicios || []);
+  }
 
-              ${
-                exercicios?.length
-                  ? exercicios.map(e => `
-                      <div class="exercise-card">
-                        <h4>${e.sessao} - ${e.exercicio}</h4>
-                        <div class="exercise-meta">
-                          <span>Séries: ${e.series || "-"}</span>
-                          <span>Repetições: ${e.repeticoes || "-"}</span>
-                          <span>Carga: ${e.carga || "-"}</span>
-                        </div>
-                        ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
-                      </div>
-                    `).join("")
-                  : `<div class="empty">Sem exercícios cadastrados.</div>`
-              }
-            </div>
-          `;
-        }
+  html += `</div>`;
+  box.innerHTML = html;
+}
+
+function renderFichaTreinoProfessor(aluno, treino, exercicios) {
+  const sessoes = ["Treino A", "Treino B", "Treino C", "Treino D"];
+
+  return `
+    <div class="panel ficha-treino-box">
+      <div style="text-align:center;margin-bottom:14px;">
+        <div style="font-size:30px;font-weight:950;letter-spacing:-1px;">
+          <span style="color:#fff;">LD</span>
+          <span style="color:#e50914;">EXTREME</span>
+        </div>
+        <div style="color:#e50914;font-weight:900;text-transform:uppercase;">Academia</div>
+      </div>
+
+      <div class="ficha-head">
+        <div><strong>Nome</strong><span>${aluno?.nome || "-"}</span></div>
+        <div><strong>Data de Nasc.</strong><span>${formatarData(aluno?.data_nascimento)}</span></div>
+        <div><strong>Código</strong><span>${aluno?.codigo || "-"}</span></div>
+        <div><strong>Professor</strong><span>${treino.professor || "-"}</span></div>
+      </div>
+
+      <div class="ficha-head">
+        <div><strong>Objetivo</strong><span>${treino.objetivo || aluno?.objetivo || "-"}</span></div>
+        <div><strong>Início</strong><span>${formatarData(treino.data_inicio)}</span></div>
+        <div><strong>Semanas</strong><span>${treino.semanas || "-"}</span></div>
+        <div><strong>Frequência</strong><span>${treino.frequencia || "-"}</span></div>
+      </div>
+
+      <div class="ficha-head ficha-full">
+        <div><strong>Mesociclo de treinamento</strong><span>${treino.mesociclo || "-"}</span></div>
+      </div>
+
+      <div class="ficha-head ficha-full">
+        <div><strong>Observações</strong><span>${treino.observacoes || treino.descricao || "-"}</span></div>
+      </div>
+
+      <div class="actions" style="justify-content:flex-end;margin:14px 0;">
+        <button class="btn btn-small btn-primary" onclick="abrirModalExercicio('${treino.id}')">+ Exercício</button>
+        <button class="btn btn-small btn-yellow" onclick="abrirModalTreino('${treino.id}')">Editar ficha</button>
+        <button class="btn btn-small btn-danger" onclick="excluirTreino('${treino.id}')">Excluir ficha</button>
+      </div>
+
+      ${sessoes.map(sessao => renderTabelaSessaoTreino(sessao, exercicios.filter(e => e.sessao === sessao))).join("")}
+    </div>
+  `;
+}
+
+function renderTabelaSessaoTreino(sessao, exercicios) {
+  return `
+    <div class="treino-section-title">${sessao}</div>
+
+    ${
+      exercicios.length
+        ? `
+          <div class="table-wrap ficha-table-wrap">
+            <table class="ficha-table">
+              <thead>
+                <tr>
+                  <th>Grupo Musc.</th>
+                  <th>Exercício</th>
+                  <th>Séries</th>
+                  <th>Repetições</th>
+                  <th>Pausa</th>
+                  <th>Cadência</th>
+                  <th>Carga</th>
+                  <th>Obs.</th>
+                  <th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${exercicios.map(e => `
+                  <tr>
+                    <td>${e.grupo_muscular || "-"}</td>
+                    <td><strong>${e.exercicio || "-"}</strong></td>
+                    <td>${e.series || "-"}</td>
+                    <td>${e.repeticoes || "-"}</td>
+                    <td>${e.pausa || "-"}</td>
+                    <td>${e.cadencia || "-"}</td>
+                    <td>${e.carga || "-"}</td>
+                    <td>${e.observacoes || "-"}</td>
+                    <td>
+                      <button class="btn btn-small btn-danger" onclick="excluirExercicio('${e.id}')">Excluir</button>
+                    </td>
+                  </tr>
+                `).join("")}
+              </tbody>
+            </table>
+          </div>
+        `
+        : `<div class="empty" style="margin-bottom:12px;">Nenhum exercício cadastrado em ${sessao}.</div>`
+    }
+  `;
+}
+
+function abrirModalTreino(id = null) {
+  const treinoExistente = id ? null : null;
+
+  abrirModalTreinoAsync(id);
+}
+
+async function abrirModalTreinoAsync(id = null) {
+  await carregarBase();
+
+  let treino = null;
+
+  if (id) {
+    const { data } = await client
+      .from("treinos")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    treino = data;
+  }
+
+  const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+    <option value="${a.id}" ${treino?.aluno_id === a.id ? "selected" : ""}>
+      ${a.codigo} - ${a.nome}
+    </option>
+  `).join("");
+
+  const html = `
+    <form onsubmit="salvarTreino(event, '${id || ""}')">
+      <div class="form-grid">
+        <div class="form-group span-2">
+          <label>Aluno</label>
+          <select id="treinoAluno" required ${id ? "disabled" : ""}>
+            <option value="">Selecione</option>
+            ${alunoOptions}
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Professor responsável</label>
+          <select id="treinoProfessor" required>
+            <option ${treino?.professor === "Eduardo" ? "selected" : ""}>Eduardo</option>
+            <option ${treino?.professor === "Leonardo" ? "selected" : ""}>Leonardo</option>
+          </select>
+        </div>
+
+        <div class="form-group span-2">
+          <label>Título da ficha</label>
+          <input id="treinoTitulo" placeholder="Ex: Hipertrofia / Emagrecimento" required value="${treino?.titulo || ""}" />
+        </div>
+
+        <div class="form-group">
+          <label>Status</label>
+          <select id="treinoAtivo">
+            <option value="true" ${treino?.ativo !== false ? "selected" : ""}>Ativo</option>
+            <option value="false" ${treino?.ativo === false ? "selected" : ""}>Inativo</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Objetivo</label>
+          <input id="treinoObjetivo" placeholder="Ex: Emagrecimento / Condicionamento" value="${treino?.objetivo || ""}" />
+        </div>
+
+        <div class="form-group">
+          <label>Data de início</label>
+          <input id="treinoDataInicio" type="date" value="${treino?.data_inicio || hojeISO()}" />
+        </div>
+
+        <div class="form-group">
+          <label>Semanas</label>
+          <input id="treinoSemanas" type="number" min="1" placeholder="Ex: 8" value="${treino?.semanas || ""}" />
+        </div>
+
+        <div class="form-group">
+          <label>Frequência</label>
+          <input id="treinoFrequencia" placeholder="Ex: 3x/semana" value="${treino?.frequencia || ""}" />
+        </div>
+
+        <div class="form-group span-2">
+          <label>Mesociclo de treinamento</label>
+          <input id="treinoMesociclo" placeholder="Ex: Adaptação / Hipertrofia / Força" value="${treino?.mesociclo || ""}" />
+        </div>
+
+        <div class="form-group span-3">
+          <label>Observações gerais da ficha</label>
+          <textarea id="treinoObservacoes">${treino?.observacoes || treino?.descricao || ""}</textarea>
+        </div>
+      </div>
+
+      <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+        <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Salvar ficha</button>
+      </div>
+    </form>
+  `;
+
+  abrirModal(id ? "Editar ficha de treino" : "Nova ficha de treino", "Modelo profissional LD Extreme Academia", html);
+}
+
+async function salvarTreino(event, id = "") {
+  event.preventDefault();
+
+  const alunoId = id
+    ? null
+    : document.getElementById("treinoAluno").value;
+
+  const payload = {
+    professor: document.getElementById("treinoProfessor").value,
+    titulo: document.getElementById("treinoTitulo").value.trim(),
+    descricao: document.getElementById("treinoObservacoes").value.trim(),
+    objetivo: document.getElementById("treinoObjetivo").value.trim(),
+    data_inicio: document.getElementById("treinoDataInicio").value || null,
+    semanas: document.getElementById("treinoSemanas").value ? Number(document.getElementById("treinoSemanas").value) : null,
+    frequencia: document.getElementById("treinoFrequencia").value.trim(),
+    mesociclo: document.getElementById("treinoMesociclo").value.trim(),
+    observacoes: document.getElementById("treinoObservacoes").value.trim(),
+    ativo: document.getElementById("treinoAtivo").value === "true",
+    atualizado_em: new Date().toISOString()
+  };
+
+  let res;
+
+  if (id) {
+    res = await client
+      .from("treinos")
+      .update(payload)
+      .eq("id", id)
+      .select()
+      .single();
+  } else {
+    payload.aluno_id = alunoId;
+
+    res = await client
+      .from("treinos")
+      .insert(payload)
+      .select()
+      .single();
+  }
+
+  if (res.error) {
+    mostrarToast("Erro ao salvar ficha: " + res.error.message, "error");
+    return;
+  }
+
+  await registrarLog(
+    res.data.aluno_id,
+    "Treinos",
+    id ? "Edição" : "Cadastro",
+    id ? "Ficha de treino atualizada." : "Ficha de treino criada."
+  );
+
+  fecharModal();
+  await abrirTela("treinos");
+
+  const alunoSelecionado = res.data.aluno_id;
+  document.getElementById("treinoAlunoFiltro").value = alunoSelecionado;
+  await carregarTreinosAluno();
+
+  mostrarToast("Ficha de treino salva.");
+}
+
+function abrirModalExercicio(treinoId) {
+  const grupos = [
+    "Aquecimento",
+    "Peito",
+    "Costas",
+    "Ombro",
+    "Bíceps",
+    "Tríceps",
+    "Perna",
+    "Glúteo",
+    "Panturrilha",
+    "Abdômen",
+    "Aeróbio",
+    "Outro"
+  ];
+
+  const html = `
+    <form onsubmit="salvarExercicio(event, '${treinoId}')">
+      <div class="form-grid">
+        <div class="form-group">
+          <label>Treino</label>
+          <select id="exSessao">
+            <option>Treino A</option>
+            <option>Treino B</option>
+            <option>Treino C</option>
+            <option>Treino D</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Ordem</label>
+          <input id="exOrdem" type="number" value="1" min="1" />
+        </div>
+
+        <div class="form-group">
+          <label>Grupo muscular</label>
+          <select id="exGrupo">
+            ${grupos.map(g => `<option>${g}</option>`).join("")}
+          </select>
+        </div>
+
+        <div class="form-group span-3">
+          <label>Exercício</label>
+          <input id="exNome" required placeholder="Ex: Supino inclinado articulado" />
+        </div>
+
+        <div class="form-group">
+          <label>Séries</label>
+          <input id="exSeries" placeholder="Ex: 4" />
+        </div>
+
+        <div class="form-group">
+          <label>Repetições</label>
+          <input id="exRepeticoes" placeholder="Ex: 8 a 12" />
+        </div>
+
+        <div class="form-group">
+          <label>Pausa</label>
+          <input id="exPausa" placeholder="Ex: 60 segundos" />
+        </div>
+
+        <div class="form-group">
+          <label>Cadência</label>
+          <input id="exCadencia" placeholder="Ex: 2-1-2" />
+        </div>
+
+        <div class="form-group">
+          <label>Carga</label>
+          <input id="exCarga" placeholder="Ex: 20kg" />
+        </div>
+
+        <div class="form-group span-3">
+          <label>Observações</label>
+          <textarea id="exObs" placeholder="Ex: Executar com controle, sem roubar movimento."></textarea>
+        </div>
+      </div>
+
+      <div class="actions" style="justify-content:flex-end;margin-top:16px;">
+        <button type="button" class="btn btn-ghost" onclick="fecharModal()">Cancelar</button>
+        <button type="submit" class="btn btn-primary">Adicionar exercício</button>
+      </div>
+    </form>
+  `;
+
+  abrirModal("Novo exercício", "Adicionar exercício à ficha de treino", html);
+}
+
+async function salvarExercicio(event, treinoId) {
+  event.preventDefault();
+
+  const payload = {
+    treino_id: treinoId,
+    sessao: document.getElementById("exSessao").value,
+    ordem: Number(document.getElementById("exOrdem").value || 1),
+    grupo_muscular: document.getElementById("exGrupo").value,
+    exercicio: document.getElementById("exNome").value.trim(),
+    series: document.getElementById("exSeries").value.trim(),
+    repeticoes: document.getElementById("exRepeticoes").value.trim(),
+    pausa: document.getElementById("exPausa").value.trim(),
+    cadencia: document.getElementById("exCadencia").value.trim(),
+    carga: document.getElementById("exCarga").value.trim(),
+    observacoes: document.getElementById("exObs").value.trim()
+  };
+
+  const { error } = await client
+    .from("treino_exercicios")
+    .insert(payload);
+
+  if (error) {
+    mostrarToast("Erro ao adicionar exercício: " + error.message, "error");
+    return;
+  }
+
+  fecharModal();
+  await carregarTreinosAluno();
+  mostrarToast("Exercício adicionado.");
+}
+
+async function excluirExercicio(id) {
+  if (!confirm("Deseja excluir este exercício?")) return;
+
+  const { error } = await client
+    .from("treino_exercicios")
+    .delete()
+    .eq("id", id);
+
+  if (error) {
+    mostrarToast("Erro ao excluir exercício: " + error.message, "error");
+    return;
+  }
+
+  await carregarTreinosAluno();
+  mostrarToast("Exercício excluído.");
+}
+
+async function excluirTreino(treinoId) {
+  if (!confirm("Deseja excluir esta ficha e todos os exercícios?")) return;
+
+  const { error } = await client
+    .from("treinos")
+    .delete()
+    .eq("id", treinoId);
+
+  if (error) {
+    mostrarToast("Erro ao excluir ficha: " + error.message, "error");
+    return;
+  }
+
+  await carregarTreinosAluno();
+  mostrarToast("Ficha excluída.");
+}
+
+function copiarLinkTreino(codigo) {
+  const link = `${window.location.origin}${window.location.pathname}?treino=${codigo}`;
+  navigator.clipboard.writeText(link);
+  mostrarToast("Link do treino copiado.");
+}
+
+async function acessarTreinoPublico() {
+  const codigo = document.getElementById("publicCodigoAluno").value.trim().toUpperCase();
+  const senha = document.getElementById("publicSenhaTreino").value.trim();
+
+  if (!codigo || !senha) {
+    mostrarToast("Informe código e senha.", "error");
+    return;
+  }
+
+  const { data: aluno, error } = await client
+    .from("alunos")
+    .select("*")
+    .eq("codigo", codigo)
+    .eq("senha_treino", senha)
+    .eq("ativo", true)
+    .single();
+
+  if (error || !aluno) {
+    mostrarToast("Código ou senha inválidos.", "error");
+    return;
+  }
+
+  const { data: treinos } = await client
+    .from("treinos")
+    .select("*")
+    .eq("aluno_id", aluno.id)
+    .eq("ativo", true)
+    .order("criado_em", { ascending: false });
+
+  let html = `
+    <div style="text-align:center;margin-bottom:18px;">
+      <div style="font-size:30px;font-weight:950;">
+        <span style="color:#fff;">LD</span>
+        <span style="color:#e50914;">EXTREME</span>
+      </div>
+      <div style="color:#e50914;font-weight:900;text-transform:uppercase;">Academia</div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">
+        <div>
+          <h2>${aluno.nome}</h2>
+          <p>${aluno.codigo} | Ficha de treino online</p>
+        </div>
+      </div>
+    </div>
+  `;
+
+  if (!treinos || !treinos.length) {
+    html += `<div class="empty">Nenhum treino ativo cadastrado no momento.</div>`;
+  } else {
+    for (const treino of treinos) {
+      const { data: exercicios } = await client
+        .from("treino_exercicios")
+        .select("*")
+        .eq("treino_id", treino.id)
+        .order("sessao")
+        .order("ordem");
+
+      html += renderFichaTreinoAluno(aluno, treino, exercicios || []);
+    }
+  }
+
+  document.getElementById("treinoLoginBox").classList.add("hidden");
+  document.getElementById("publicTreinoConteudo").classList.remove("hidden");
+  document.getElementById("publicTreinoConteudo").innerHTML = html;
+}
+
+function renderFichaTreinoAluno(aluno, treino, exercicios) {
+  const sessoes = ["Treino A", "Treino B", "Treino C", "Treino D"];
+
+  return `
+    <div class="panel ficha-treino-box">
+      <div class="ficha-head">
+        <div><strong>Objetivo</strong><span>${treino.objetivo || aluno?.objetivo || "-"}</span></div>
+        <div><strong>Início</strong><span>${formatarData(treino.data_inicio)}</span></div>
+        <div><strong>Semanas</strong><span>${treino.semanas || "-"}</span></div>
+        <div><strong>Frequência</strong><span>${treino.frequencia || "-"}</span></div>
+      </div>
+
+      <div class="ficha-head">
+        <div><strong>Professor</strong><span>${treino.professor || "-"}</span></div>
+        <div><strong>Mesociclo</strong><span>${treino.mesociclo || "-"}</span></div>
+      </div>
+
+      ${
+        treino.observacoes
+          ? `<div class="ficha-head ficha-full"><div><strong>Observações</strong><span>${treino.observacoes}</span></div></div>`
+          : ""
       }
+
+      ${sessoes.map(sessao => renderSessaoAluno(sessao, exercicios.filter(e => e.sessao === sessao))).join("")}
+    </div>
+  `;
+}
+
+function renderSessaoAluno(sessao, exercicios) {
+  if (!exercicios.length) return "";
+
+  return `
+    <div class="treino-section-title">${sessao}</div>
+
+    <div class="debt-list">
+      ${exercicios.map(e => `
+        <div class="exercise-card">
+          <h4>${e.grupo_muscular || "Exercício"} - ${e.exercicio}</h4>
+          <div class="exercise-meta">
+            <span>Séries: ${e.series || "-"}</span>
+            <span>Repetições: ${e.repeticoes || "-"}</span>
+            <span>Pausa: ${e.pausa || "-"}</span>
+            <span>Cadência: ${e.cadencia || "-"}</span>
+            <span>Carga: ${e.carga || "-"}</span>
+          </div>
+          ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  `;
+}
 
       document.getElementById("treinoLoginBox").classList.add("hidden");
       document.getElementById("publicTreinoConteudo").classList.remove("hidden");
