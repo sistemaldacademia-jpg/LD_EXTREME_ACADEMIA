@@ -3262,87 +3262,60 @@ function copiarLinkTreino(codigo) {
   mostrarToast("Link do treino copiado.");
 }
 
-async function acessarTreinoPublico() {
-  const codigo = document.getElementById("publicCodigoAluno").value.trim().toUpperCase();
-  const senha = document.getElementById("publicSenhaTreino").value.trim();
+function renderFichaTreinoAluno(aluno, treino, exercicios) {
+  const sessoes = ["Treino A", "Treino B", "Treino C", "Treino D"];
 
-  if (!codigo || !senha) {
-    mostrarToast("Informe código e senha.", "error");
-    return;
-  }
-
-  const { data: aluno, error } = await client
-    .from("alunos")
-    .select("*")
-    .eq("codigo", codigo)
-    .eq("senha_treino", senha)
-    .eq("ativo", true)
-    .maybeSingle();
-
-  if (error) {
-    mostrarToast("Erro ao buscar aluno: " + error.message, "error");
-    return;
-  }
-
-  if (!aluno) {
-    mostrarToast("Código ou senha inválidos.", "error");
-    return;
-  }
-
-  const { data: treinos, error: erroTreinos } = await client
-    .from("treinos")
-    .select("*")
-    .eq("aluno_id", aluno.id)
-    .eq("ativo", true)
-    .order("criado_em", { ascending: false });
-
-  if (erroTreinos) {
-    mostrarToast("Erro ao buscar treinos: " + erroTreinos.message, "error");
-    return;
-  }
-
-  let html = `
-    <div style="text-align:center;margin-bottom:18px;">
-      <div style="font-size:30px;font-weight:950;">
-        <span style="color:#fff;">LD</span>
-        <span style="color:#e50914;">EXTREME</span>
+  return `
+    <div class="panel ficha-treino-box">
+      <div class="ficha-head">
+        <div><strong>Nome</strong><span>${aluno?.nome || "-"}</span></div>
+        <div><strong>Código</strong><span>${aluno?.codigo || "-"}</span></div>
+        <div><strong>Professor</strong><span>${treino.professor || "-"}</span></div>
+        <div><strong>Início</strong><span>${formatarData(treino.data_inicio)}</span></div>
       </div>
-      <div style="color:#e50914;font-weight:900;text-transform:uppercase;">Academia</div>
-    </div>
 
-    <div class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>${aluno.nome}</h2>
-          <p>${aluno.codigo} | Ficha de treino online</p>
-        </div>
+      <div class="ficha-head">
+        <div><strong>Objetivo</strong><span>${treino.objetivo || aluno?.objetivo || "-"}</span></div>
+        <div><strong>Semanas</strong><span>${treino.semanas || "-"}</span></div>
+        <div><strong>Frequência</strong><span>${treino.frequencia || "-"}</span></div>
+        <div><strong>Mesociclo</strong><span>${treino.mesociclo || "-"}</span></div>
       </div>
-    </div>
-  `;
 
-  if (!treinos || !treinos.length) {
-    html += `<div class="empty">Nenhum treino ativo cadastrado no momento.</div>`;
-  } else {
-    for (const treino of treinos) {
-      const { data: exercicios, error: erroExercicios } = await client
-        .from("treino_exercicios")
-        .select("*")
-        .eq("treino_id", treino.id)
-        .order("sessao")
-        .order("ordem");
-
-      if (erroExercicios) {
-        mostrarToast("Erro ao buscar exercícios: " + erroExercicios.message, "error");
-        return;
+      ${
+        treino.observacoes
+          ? `<div class="ficha-head ficha-full"><div><strong>Observações</strong><span>${treino.observacoes}</span></div></div>`
+          : ""
       }
 
-      html += renderFichaTreinoAluno(aluno, treino, exercicios || []);
-    }
-  }
+      ${sessoes.map(sessao => renderSessaoAluno(sessao, exercicios.filter(e => e.sessao === sessao))).join("")}
+    </div>
+  `;
+}
 
-  document.getElementById("treinoLoginBox").classList.add("hidden");
-  document.getElementById("publicTreinoConteudo").classList.remove("hidden");
-  document.getElementById("publicTreinoConteudo").innerHTML = html;
+function renderSessaoAluno(sessao, exercicios) {
+  if (!exercicios.length) return "";
+
+  return `
+    <div class="treino-section-title">${sessao}</div>
+
+    <div class="debt-list">
+      ${exercicios.map(e => `
+        <div class="exercise-card">
+          <h4>${e.grupo_muscular || "Exercício"} - ${e.exercicio}</h4>
+
+          <div class="exercise-meta">
+            <span>Séries: ${e.series || "-"}</span>
+            <span>Repetições: ${e.repeticoes || "-"}</span>
+            <span>Pausa: ${e.pausa || "-"}</span>
+            <span>Cadência: ${e.cadencia || "-"}</span>
+            <span>Carga: ${e.carga || "-"}</span>
+          </div>
+
+          ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
+        </div>
+      `).join("")}
+    </div>
+  `;
 }
     
     // ============================================================
