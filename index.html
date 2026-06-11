@@ -3344,62 +3344,6 @@ async function acessarTreinoPublico() {
   document.getElementById("publicTreinoConteudo").classList.remove("hidden");
   document.getElementById("publicTreinoConteudo").innerHTML = html;
 }
-
-function renderFichaTreinoAluno(aluno, treino, exercicios) {
-  const sessoes = ["Treino A", "Treino B", "Treino C", "Treino D"];
-
-  return `
-    <div class="panel ficha-treino-box">
-      <div class="ficha-head">
-        <div><strong>Objetivo</strong><span>${treino.objetivo || aluno?.objetivo || "-"}</span></div>
-        <div><strong>Início</strong><span>${formatarData(treino.data_inicio)}</span></div>
-        <div><strong>Semanas</strong><span>${treino.semanas || "-"}</span></div>
-        <div><strong>Frequência</strong><span>${treino.frequencia || "-"}</span></div>
-      </div>
-
-      <div class="ficha-head">
-        <div><strong>Professor</strong><span>${treino.professor || "-"}</span></div>
-        <div><strong>Mesociclo</strong><span>${treino.mesociclo || "-"}</span></div>
-      </div>
-
-      ${
-        treino.observacoes
-          ? `<div class="ficha-head ficha-full"><div><strong>Observações</strong><span>${treino.observacoes}</span></div></div>`
-          : ""
-      }
-
-      ${sessoes.map(sessao => renderSessaoAluno(sessao, exercicios.filter(e => e.sessao === sessao))).join("")}
-    </div>
-  `;
-}
-
-function renderSessaoAluno(sessao, exercicios) {
-  if (!exercicios.length) return "";
-
-  return `
-    <div class="treino-section-title">${sessao}</div>
-
-    <div class="debt-list">
-      ${exercicios.map(e => `
-        <div class="exercise-card">
-          <h4>${e.grupo_muscular || "Exercício"} - ${e.exercicio}</h4>
-          <div class="exercise-meta">
-            <span>Séries: ${e.series || "-"}</span>
-            <span>Repetições: ${e.repeticoes || "-"}</span>
-            <span>Pausa: ${e.pausa || "-"}</span>
-            <span>Cadência: ${e.cadencia || "-"}</span>
-            <span>Carga: ${e.carga || "-"}</span>
-          </div>
-          ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-      document.getElementById("treinoLoginBox").classList.add("hidden");
-      document.getElementById("publicTreinoConteudo").classList.remove("hidden");
-      document.getElementById("publicTreinoConteudo").innerHTML = html;
     
     // ============================================================
 // FASE 2 - PRODUTOS
