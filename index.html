@@ -3733,18 +3733,78 @@ async function renderTreinos() {
         <button class="btn btn-primary" onclick="abrirModalTreino()">+ Nova ficha</button>
       </div>
 
-      <div class="toolbar">
-        <select id="treinoAlunoFiltro" onchange="carregarTreinosAluno()">
-          <option value="">Selecione um aluno</option>
-          ${alunoOptions}
-        </select>
-      </div>
+      <div class="toolbar treino-toolbar">
+  <div style="flex:1;min-width:260px;">
+    <label style="display:block;font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px;">
+      Pesquisar aluno
+    </label>
+
+    <input
+      id="buscaAlunoTreino"
+      placeholder="Digite o nome ou código do aluno..."
+      oninput="filtrarAlunosTreino()"
+      autocomplete="off"
+    >
+
+    <div id="resultadoBuscaAlunoTreino" class="resultado-busca-aluno hidden"></div>
+
+    <select id="treinoAlunoFiltro" onchange="carregarTreinosAluno()" style="margin-top:10px;">
+      <option value="">Selecione um aluno</option>
+      ${alunoOptions}
+    </select>
+  </div>
+</div>
 
       <div id="treinosResultado" class="empty">Selecione um aluno para visualizar as fichas de treino.</div>
     </div>
   `;
 
   document.getElementById("telaTreinos").innerHTML = html;
+}
+
+    function filtrarAlunosTreino() {
+  const termo = document.getElementById("buscaAlunoTreino").value.trim().toLowerCase();
+  const box = document.getElementById("resultadoBuscaAlunoTreino");
+
+  if (!termo) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  const encontrados = alunosCache
+    .filter(a => a.ativo)
+    .filter(a =>
+      String(a.nome || "").toLowerCase().includes(termo) ||
+      String(a.codigo || "").toLowerCase().includes(termo)
+    )
+    .slice(0, 8);
+
+  if (!encontrados.length) {
+    box.classList.remove("hidden");
+    box.innerHTML = `<div class="busca-aluno-vazio">Nenhum aluno encontrado.</div>`;
+    return;
+  }
+
+  box.classList.remove("hidden");
+
+  box.innerHTML = encontrados.map(a => `
+    <button type="button" class="busca-aluno-item" onclick="selecionarAlunoTreino('${a.id}')">
+      <strong>${a.nome}</strong>
+      <span>${a.codigo || ""} ${a.telefone ? " | " + a.telefone : ""}</span>
+    </button>
+  `).join("");
+}
+
+async function selecionarAlunoTreino(alunoId) {
+  const aluno = alunosCache.find(a => a.id === alunoId);
+
+  document.getElementById("treinoAlunoFiltro").value = alunoId;
+  document.getElementById("buscaAlunoTreino").value = aluno ? `${aluno.nome} - ${aluno.codigo || ""}` : "";
+  document.getElementById("resultadoBuscaAlunoTreino").classList.add("hidden");
+  document.getElementById("resultadoBuscaAlunoTreino").innerHTML = "";
+
+  await carregarTreinosAluno();
 }
 
 async function carregarTreinosAluno() {
