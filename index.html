@@ -909,7 +909,305 @@
         grid-template-columns: 1fr;
       }
     }
-  </style>
+/* ============================================================
+   ÁREA DO ALUNO - TREINO ONLINE
+============================================================ */
+
+.aluno-treino-header {
+  background: linear-gradient(135deg, rgba(229,9,20,.22), rgba(255,255,255,.04));
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+  padding: 22px;
+  margin-bottom: 18px;
+  text-align: center;
+}
+
+.aluno-logo-text {
+  font-size: 30px;
+  font-weight: 950;
+  color: #fff;
+  letter-spacing: -1px;
+  text-transform: uppercase;
+}
+
+.aluno-logo-text span {
+  color: #fff;
+}
+
+.aluno-logo-text small {
+  display: block;
+  color: #e50914;
+  font-size: 12px;
+  letter-spacing: 3px;
+  margin-top: 2px;
+}
+
+.aluno-treino-nome {
+  margin-top: 18px;
+}
+
+.aluno-treino-nome h1 {
+  font-size: clamp(24px, 6vw, 38px);
+  line-height: 1;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+
+.aluno-treino-nome p {
+  color: var(--muted);
+}
+
+.aluno-ficha-card {
+  background: rgba(17,17,17,.96);
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 0 20px 50px rgba(0,0,0,.28);
+  margin-bottom: 18px;
+}
+
+.aluno-ficha-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 14px;
+  margin-bottom: 16px;
+}
+
+.aluno-ficha-top h2 {
+  font-size: 22px;
+  text-transform: uppercase;
+  letter-spacing: -.02em;
+}
+
+.aluno-ficha-top p {
+  color: var(--muted);
+  margin-top: 5px;
+}
+
+.aluno-ficha-badge {
+  background: rgba(229,9,20,.18);
+  color: #ffb4ba;
+  border: 1px solid rgba(229,9,20,.32);
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.aluno-resumo-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.aluno-resumo-grid div {
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 15px;
+  padding: 12px;
+}
+
+.aluno-resumo-grid span,
+.aluno-observacao span,
+.aluno-exercicio-info span,
+.aluno-exercicio-head span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.aluno-resumo-grid strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.aluno-observacao {
+  background: rgba(229,9,20,.09);
+  border: 1px solid rgba(229,9,20,.2);
+  border-radius: 15px;
+  padding: 13px;
+  margin-bottom: 16px;
+}
+
+.aluno-observacao p {
+  color: #eee;
+  line-height: 1.45;
+}
+
+.aluno-treinos-lista {
+  display: grid;
+  gap: 12px;
+}
+
+.aluno-treino-details {
+  background: rgba(255,255,255,.04);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 17px;
+  overflow: hidden;
+}
+
+.aluno-treino-details summary {
+  list-style: none;
+  cursor: pointer;
+  padding: 15px;
+  background: rgba(255,255,255,.055);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.aluno-treino-details summary::-webkit-details-marker {
+  display: none;
+}
+
+.aluno-treino-details summary strong {
+  display: block;
+  font-size: 18px;
+  text-transform: uppercase;
+}
+
+.aluno-treino-details summary span {
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.summary-icon {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: rgba(229,9,20,.18);
+  color: #fff !important;
+  font-size: 18px !important;
+  transition: .2s;
+}
+
+.aluno-treino-details[open] .summary-icon {
+  transform: rotate(180deg);
+}
+
+.aluno-exercicios-grid {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+}
+
+.aluno-exercicio-card {
+  display: grid;
+  grid-template-columns: 42px 1fr;
+  gap: 12px;
+  background: #101010;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 16px;
+  padding: 13px;
+}
+
+.aluno-exercicio-numero {
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, #e50914, #a60008);
+  display: grid;
+  place-items: center;
+  color: #fff;
+  font-weight: 950;
+  box-shadow: 0 10px 24px rgba(229,9,20,.25);
+}
+
+.aluno-exercicio-head h3 {
+  font-size: 18px;
+  color: #fff;
+  line-height: 1.2;
+  margin-bottom: 12px;
+}
+
+.aluno-exercicio-info {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0,1fr));
+  gap: 8px;
+}
+
+.aluno-exercicio-info div {
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 9px;
+}
+
+.aluno-exercicio-info strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.aluno-exercicio-obs {
+  margin-top: 10px;
+  color: #ddd;
+  background: rgba(255,255,255,.045);
+  border-radius: 12px;
+  padding: 10px;
+  line-height: 1.45;
+  font-size: 14px;
+}
+
+@media (max-width: 850px) {
+  .aluno-resumo-grid {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+
+  .aluno-exercicio-info {
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
+
+  .aluno-ficha-top {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 520px) {
+  .public-treino {
+    padding: 12px;
+  }
+
+  .public-card {
+    padding: 14px;
+    border-radius: 20px;
+  }
+
+  .aluno-treino-header {
+    padding: 18px;
+  }
+
+  .aluno-resumo-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aluno-exercicio-card {
+    grid-template-columns: 1fr;
+  }
+
+  .aluno-exercicio-numero {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+  }
+
+  .aluno-exercicio-info {
+    grid-template-columns: 1fr;
+  }
+
+  .aluno-treino-details summary {
+    align-items: flex-start;
+  }
+}
+    </style>
 </head>
 
 <body>
@@ -1103,7 +1401,7 @@
       }, 3500);
     }
 
-    async function acessarTreinoPublico() {
+ async function acessarTreinoPublico() {
   const codigo = document.getElementById("publicCodigoAluno").value.trim().toUpperCase();
   const senha = document.getElementById("publicSenhaTreino").value.trim();
 
@@ -1143,20 +1441,15 @@
   }
 
   let htmlTreino = `
-    <div style="text-align:center;margin-bottom:18px;">
-      <div style="font-size:30px;font-weight:950;">
-        <span style="color:#fff;">LD</span>
-        <span style="color:#e50914;">EXTREME</span>
+    <div class="aluno-treino-header">
+      <div class="aluno-logo-text">
+        <span>LD</span> EXTREME
+        <small>ACADEMIA</small>
       </div>
-      <div style="color:#e50914;font-weight:900;text-transform:uppercase;">Academia</div>
-    </div>
 
-    <div class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>${aluno.nome}</h2>
-          <p>${aluno.codigo} | Ficha de treino online</p>
-        </div>
+      <div class="aluno-treino-nome">
+        <h1>${aluno.nome}</h1>
+        <p>${aluno.codigo} | Ficha de treino online</p>
       </div>
     </div>
   `;
@@ -1189,56 +1482,132 @@
 function renderFichaTreinoAlunoPublica(aluno, treino, exercicios) {
   const sessoes = ["Treino A", "Treino B", "Treino C", "Treino D"];
 
+  const totalExercicios = exercicios.length;
+
   return `
-    <div class="panel ficha-treino-box">
-      <div class="ficha-head">
-        <div><strong>Nome</strong><span>${aluno?.nome || "-"}</span></div>
-        <div><strong>Código</strong><span>${aluno?.codigo || "-"}</span></div>
-        <div><strong>Professor</strong><span>${treino.professor || "-"}</span></div>
-        <div><strong>Início</strong><span>${formatarData(treino.data_inicio)}</span></div>
+    <div class="aluno-ficha-card">
+      <div class="aluno-ficha-top">
+        <div>
+          <h2>${treino.titulo || "Ficha de treino"}</h2>
+          <p>Professor: <strong>${treino.professor || "-"}</strong></p>
+        </div>
+
+        <div class="aluno-ficha-badge">
+          ${totalExercicios} exercícios
+        </div>
       </div>
 
-      <div class="ficha-head">
-        <div><strong>Objetivo</strong><span>${treino.objetivo || aluno?.objetivo || "-"}</span></div>
-        <div><strong>Semanas</strong><span>${treino.semanas || "-"}</span></div>
-        <div><strong>Frequência</strong><span>${treino.frequencia || "-"}</span></div>
-        <div><strong>Mesociclo</strong><span>${treino.mesociclo || "-"}</span></div>
+      <div class="aluno-resumo-grid">
+        <div>
+          <span>Objetivo</span>
+          <strong>${treino.objetivo || aluno?.objetivo || "-"}</strong>
+        </div>
+
+        <div>
+          <span>Início</span>
+          <strong>${formatarData(treino.data_inicio)}</strong>
+        </div>
+
+        <div>
+          <span>Semanas</span>
+          <strong>${treino.semanas || "-"}</strong>
+        </div>
+
+        <div>
+          <span>Frequência</span>
+          <strong>${treino.frequencia || "-"}</strong>
+        </div>
+
+        <div>
+          <span>Mesociclo</span>
+          <strong>${treino.mesociclo || "-"}</strong>
+        </div>
       </div>
 
       ${
         treino.observacoes
-          ? `<div class="ficha-head ficha-full"><div><strong>Observações</strong><span>${treino.observacoes}</span></div></div>`
+          ? `
+            <div class="aluno-observacao">
+              <span>Observações do professor</span>
+              <p>${treino.observacoes}</p>
+            </div>
+          `
           : ""
       }
 
-      ${sessoes.map(sessao => renderSessaoAlunoPublica(sessao, exercicios.filter(e => e.sessao === sessao))).join("")}
+      <div class="aluno-treinos-lista">
+        ${sessoes.map((sessao, index) => {
+          const lista = exercicios.filter(e => e.sessao === sessao);
+          return renderSessaoAlunoPublica(sessao, lista, index === 0);
+        }).join("")}
+      </div>
     </div>
   `;
 }
 
-function renderSessaoAlunoPublica(sessao, exercicios) {
+function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
   if (!exercicios.length) return "";
 
   return `
-    <div class="treino-section-title">${sessao}</div>
-
-    <div class="debt-list">
-      ${exercicios.map(e => `
-        <div class="exercise-card">
-          <h4>${e.grupo_muscular || "Exercício"} - ${e.exercicio}</h4>
-
-          <div class="exercise-meta">
-            <span>Séries: ${e.series || "-"}</span>
-            <span>Repetições: ${e.repeticoes || "-"}</span>
-            <span>Pausa: ${e.pausa || "-"}</span>
-            <span>Cadência: ${e.cadencia || "-"}</span>
-            <span>Carga: ${e.carga || "-"}</span>
-          </div>
-
-          ${e.observacoes ? `<p style="color:var(--muted);margin-top:8px;">${e.observacoes}</p>` : ""}
+    <details class="aluno-treino-details" ${aberto ? "open" : ""}>
+      <summary>
+        <div>
+          <strong>${sessao}</strong>
+          <span>${exercicios.length} exercícios cadastrados</span>
         </div>
-      `).join("")}
-    </div>
+        <span class="summary-icon">⌄</span>
+      </summary>
+
+      <div class="aluno-exercicios-grid">
+        ${exercicios.map((e, index) => `
+          <div class="aluno-exercicio-card">
+            <div class="aluno-exercicio-numero">${index + 1}</div>
+
+            <div class="aluno-exercicio-conteudo">
+              <div class="aluno-exercicio-head">
+                <div>
+                  <span>${e.grupo_muscular || "Exercício"}</span>
+                  <h3>${e.exercicio}</h3>
+                </div>
+              </div>
+
+              <div class="aluno-exercicio-info">
+                <div>
+                  <span>Séries</span>
+                  <strong>${e.series || "-"}</strong>
+                </div>
+
+                <div>
+                  <span>Repetições</span>
+                  <strong>${e.repeticoes || "-"}</strong>
+                </div>
+
+                <div>
+                  <span>Pausa</span>
+                  <strong>${e.pausa || "-"}</strong>
+                </div>
+
+                <div>
+                  <span>Cadência</span>
+                  <strong>${e.cadencia || "-"}</strong>
+                </div>
+
+                <div>
+                  <span>Carga</span>
+                  <strong>${e.carga || "-"}</strong>
+                </div>
+              </div>
+
+              ${
+                e.observacoes
+                  ? `<div class="aluno-exercicio-obs">${e.observacoes}</div>`
+                  : ""
+              }
+            </div>
+          </div>
+        `).join("")}
+      </div>
+    </details>
   `;
 }
     
