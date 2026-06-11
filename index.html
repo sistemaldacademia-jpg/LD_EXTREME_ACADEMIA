@@ -3075,7 +3075,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         `Qualquer dúvida, estamos à disposição.`;
 
       if (telefone) {
-        window.open(`https://wa.me/${telefone}?text=${msg}`, "_blank");
+       window.location.href = `https://wa.me/${telefone}?text=${msg}`;
       } else {
         navigator.clipboard.writeText(decodeURIComponent(msg.replaceAll("%0A", "\n")));
         mostrarToast("Mensagem copiada. O aluno não possui telefone cadastrado.");
@@ -3556,21 +3556,21 @@ async function selecionarAlunoConta(alunoId) {
 
       const telefone = limparTelefone(aluno?.telefone || "");
       if (telefone) {
-        window.open(`https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`, "_blank");
+        window.location.href = `https://wa.me/${telefone}?text=${encodeURIComponent(texto)}`;
       } else {
         navigator.clipboard.writeText(texto);
         mostrarToast("Mensagem copiada. O aluno não possui telefone cadastrado.");
       }
     }
 
-    function abrirWhatsAppMensagem(telefone, mensagem) {
+ function abrirWhatsAppMensagem(telefone, mensagem) {
   const numero = limparTelefone(telefone);
   const texto = encodeURIComponent(mensagem);
 
   const url = `https://wa.me/55${numero}?text=${texto}`;
 
-  // Abre sempre na mesma aba/janela do WhatsApp
-  window.open(url, "whatsapp_ld_extreme");
+  // Abre o WhatsApp na mesma aba, sem criar aba nova
+  window.location.href = url;
 }
 
    async function mensagemWhatsappItemConta(alunoId, itemId, tipo) {
