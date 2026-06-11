@@ -1432,6 +1432,52 @@
     width: 100%;
   }
 }
+
+    .resultado-busca-aluno {
+  margin-top: 8px;
+  background: #111;
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 18px 40px rgba(0,0,0,.35);
+}
+
+.busca-aluno-item {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  text-align: left;
+  padding: 12px 14px;
+  cursor: pointer;
+  border-bottom: 1px solid rgba(255,255,255,.08);
+}
+
+.busca-aluno-item:hover {
+  background: rgba(229,9,20,.16);
+}
+
+.busca-aluno-item strong {
+  display: block;
+  font-size: 14px;
+}
+
+.busca-aluno-item span {
+  display: block;
+  color: var(--muted);
+  font-size: 12px;
+  margin-top: 3px;
+}
+
+.busca-aluno-vazio {
+  padding: 12px 14px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.conta-toolbar input {
+  width: 100%;
+}
     
     </style>
 </head>
@@ -3127,13 +3173,28 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
             </div>
           </div>
 
-          <div class="toolbar">
-            <select id="contaAlunoSelect" onchange="carregarContaAlunoSelecionado()">
-              <option value="">Selecione um aluno</option>
-              ${alunoOptions}
-            </select>
+          <div class="toolbar conta-toolbar">
+  <div style="flex:1;min-width:260px;">
+    <label style="display:block;font-size:12px;color:var(--muted);font-weight:800;margin-bottom:6px;">
+      Pesquisar aluno
+    </label>
 
-            <button class="btn btn-primary" onclick="abrirModalLancamentoConta()">+ Lançamento</button>
+    <input
+      id="buscaAlunoConta"
+      placeholder="Digite o nome ou código do aluno..."
+      oninput="filtrarAlunosContaAluno()"
+      autocomplete="off"
+    >
+
+    <div id="resultadoBuscaContaAluno" class="resultado-busca-aluno hidden"></div>
+
+    <select id="contaAlunoSelect" onchange="carregarContaAlunoSelecionado()" style="margin-top:10px;">
+      <option value="">Selecione um aluno</option>
+      ${alunoOptions}
+    </select>
+  </div>
+
+  <button class="btn btn-primary" onclick="abrirModalLancamentoConta()">+ Lançamento</button>
           </div>
 
           <div id="contaAlunoResultado" class="empty">Selecione um aluno para visualizar a conta.</div>
@@ -3142,6 +3203,51 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
 
       document.getElementById("telaContaAluno").innerHTML = html;
     }
+
+    function filtrarAlunosContaAluno() {
+  const termo = document.getElementById("buscaAlunoConta").value.trim().toLowerCase();
+  const box = document.getElementById("resultadoBuscaContaAluno");
+
+  if (!termo) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  const encontrados = alunosCache
+    .filter(a => a.ativo)
+    .filter(a =>
+      String(a.nome || "").toLowerCase().includes(termo) ||
+      String(a.codigo || "").toLowerCase().includes(termo)
+    )
+    .slice(0, 8);
+
+  if (!encontrados.length) {
+    box.classList.remove("hidden");
+    box.innerHTML = `<div class="busca-aluno-vazio">Nenhum aluno encontrado.</div>`;
+    return;
+  }
+
+  box.classList.remove("hidden");
+
+  box.innerHTML = encontrados.map(a => `
+    <button type="button" class="busca-aluno-item" onclick="selecionarAlunoConta('${a.id}')">
+      <strong>${a.nome}</strong>
+      <span>${a.codigo || ""} ${a.telefone ? " | " + a.telefone : ""}</span>
+    </button>
+  `).join("");
+}
+
+async function selecionarAlunoConta(alunoId) {
+  const aluno = alunosCache.find(a => a.id === alunoId);
+
+  document.getElementById("contaAlunoSelect").value = alunoId;
+  document.getElementById("buscaAlunoConta").value = aluno ? `${aluno.nome} - ${aluno.codigo || ""}` : "";
+  document.getElementById("resultadoBuscaContaAluno").classList.add("hidden");
+  document.getElementById("resultadoBuscaContaAluno").innerHTML = "";
+
+  await carregarContaAlunoSelecionado();
+}
 
     async function carregarContaAlunoSelecionado() {
       const alunoId = document.getElementById("contaAlunoSelect").value;
@@ -3206,8 +3312,8 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
               <h2>${aluno?.nome || "Aluno"}</h2>
               <p>${aluno?.codigo || ""} | ${aluno?.telefone || ""}</p>
             </div>
-            <button class="btn btn-blue" onclick="mensagemWhatsappContaAluno('${alunoId}')">Gerar WhatsApp</button>
-          </div>
+<button class="btn btn-blue" onclick="mensagemWhatsappContaAluno('${alunoId}')">WhatsApp conta completa</button>
+</div>
 
           <div class="debt-list">
             ${todos.map(item => `
@@ -3216,11 +3322,16 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
                   <strong>${item.descricao}</strong>
                   <span>${item.tipo} | ${formatarData(item.data)} | ${item.status}</span>
                 </div>
-                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                  <strong>${BRL.format(item.valor)}</strong>
-                  ${item.acao}
-                </div>
-              </div>
+               <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+  <strong>${BRL.format(item.valor)}</strong>
+
+  <button class="btn btn-small btn-blue" onclick="mensagemWhatsappItemConta('${alunoId}', '${item.id}', '${item.tipo}')">
+    WhatsApp item
+  </button>
+
+  ${item.acao}
+</div>
+</div>
             `).join("")}
           </div>
 
@@ -3451,6 +3562,89 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         mostrarToast("Mensagem copiada. O aluno não possui telefone cadastrado.");
       }
     }
+
+    async function mensagemWhatsappItemConta(alunoId, itemId, tipo) {
+  const aluno = alunosCache.find(a => a.id === alunoId);
+
+  if (!aluno || !aluno.telefone) {
+    mostrarToast("Aluno sem telefone cadastrado.", "error");
+    return;
+  }
+
+  let item = null;
+
+  if (tipo === "Mensalidade") {
+    const { data, error } = await client
+      .from("mensalidades")
+      .select("*")
+      .eq("id", itemId)
+      .single();
+
+    if (error || !data) {
+      mostrarToast("Erro ao buscar mensalidade.", "error");
+      return;
+    }
+
+    item = {
+      descricao: `Mensalidade ${String(data.competencia_mes).padStart(2, "0")}/${data.competencia_ano}`,
+      data: data.data_vencimento,
+      valor: Number(data.valor || 0),
+      status: data.status
+    };
+  } else {
+    const { data, error } = await client
+      .from("conta_aluno_lancamentos")
+      .select("*")
+      .eq("id", itemId)
+      .single();
+
+    if (error || !data) {
+      mostrarToast("Erro ao buscar item da conta.", "error");
+      return;
+    }
+
+    item = {
+      descricao: data.descricao,
+      data: data.criado_em,
+      valor: Number(data.valor || 0),
+      status: data.status
+    };
+  }
+
+  const { data: mensalidades } = await client
+    .from("mensalidades")
+    .select("*")
+    .eq("aluno_id", alunoId)
+    .in("status", ["Pendente", "Vencido"]);
+
+  const { data: lancamentos } = await client
+    .from("conta_aluno_lancamentos")
+    .select("*")
+    .eq("aluno_id", alunoId)
+    .eq("status", "Em Aberto");
+
+  const totalMensalidades = (mensalidades || []).reduce((soma, m) => soma + Number(m.valor || 0), 0);
+  const totalLancamentos = (lancamentos || []).reduce((soma, l) => soma + Number(l.valor || 0), 0);
+  const totalAberto = totalMensalidades + totalLancamentos;
+
+  const telefone = limparTelefone(aluno.telefone);
+
+  const mensagem = `
+Olá ${aluno.nome}, tudo bem?
+
+Consta em sua conta na LD Extreme Academia:
+
+${tipo}: ${item.descricao}
+Data: ${formatarData(item.data)}
+Valor: ${BRL.format(item.valor)}
+
+Seu total em aberto atualmente é de ${BRL.format(totalAberto)}.
+
+Qualquer dúvida, estamos à disposição.
+  `.trim();
+
+  window.open(`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`, "_blank");
+}
 
    // ============================================================
 // TREINOS - FICHA PROFISSIONAL LD EXTREME
