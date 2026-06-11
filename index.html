@@ -3563,7 +3563,7 @@ async function selecionarAlunoConta(alunoId) {
       }
     }
 
-    async function mensagemWhatsappItemConta(alunoId, itemId, tipo) {
+   async function mensagemWhatsappItemConta(alunoId, itemId, tipo) {
   const aluno = alunosCache.find(a => a.id === alunoId);
 
   if (!aluno || !aluno.telefone) {
@@ -3587,7 +3587,7 @@ async function selecionarAlunoConta(alunoId) {
 
     item = {
       descricao: `Mensalidade ${String(data.competencia_mes).padStart(2, "0")}/${data.competencia_ano}`,
-      data: data.data_vencimento,
+      data: data.data_pagamento || data.data_vencimento || data.criado_em,
       valor: Number(data.valor || 0),
       status: data.status
     };
@@ -3603,11 +3603,28 @@ async function selecionarAlunoConta(alunoId) {
       return;
     }
 
+    const valorItem = Number(
+      data.valor ||
+      data.valor_total ||
+      data.total ||
+      data.preco_total ||
+      data.preco ||
+      data.valor_unitario ||
+      0
+    );
+
+    const dataItem =
+      data.data_lancamento ||
+      data.data_venda ||
+      data.data ||
+      data.criado_em ||
+      data.created_at;
+
     item = {
-      descricao: data.descricao,
-      data: data.criado_em,
-      valor: Number(data.valor || 0),
-      status: data.status
+      descricao: data.descricao || data.produto || data.nome || "Produto/serviço",
+      data: dataItem,
+      valor: valorItem,
+      status: data.status || "Em Aberto"
     };
   }
 
@@ -3623,8 +3640,22 @@ async function selecionarAlunoConta(alunoId) {
     .eq("aluno_id", alunoId)
     .eq("status", "Em Aberto");
 
-  const totalMensalidades = (mensalidades || []).reduce((soma, m) => soma + Number(m.valor || 0), 0);
-  const totalLancamentos = (lancamentos || []).reduce((soma, l) => soma + Number(l.valor || 0), 0);
+  const totalMensalidades = (mensalidades || []).reduce((soma, m) => {
+    return soma + Number(m.valor || 0);
+  }, 0);
+
+  const totalLancamentos = (lancamentos || []).reduce((soma, l) => {
+    return soma + Number(
+      l.valor ||
+      l.valor_total ||
+      l.total ||
+      l.preco_total ||
+      l.preco ||
+      l.valor_unitario ||
+      0
+    );
+  }, 0);
+
   const totalAberto = totalMensalidades + totalLancamentos;
 
   const telefone = limparTelefone(aluno.telefone);
@@ -3635,7 +3666,7 @@ Olá ${aluno.nome}, tudo bem?
 Consta em sua conta na LD Extreme Academia:
 
 ${tipo}: ${item.descricao}
-Data: ${formatarData(item.data)}
+Data/Hora: ${formatarDataHoraConta(item.data)}
 Valor: ${BRL.format(item.valor)}
 
 Seu total em aberto atualmente é de ${BRL.format(totalAberto)}.
@@ -3644,6 +3675,24 @@ Qualquer dúvida, estamos à disposição.
   `.trim();
 
   window.open(`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`, "_blank");
+}
+
+    function formatarDataHoraConta(valor) {
+  if (!valor) return "-";
+
+  const data = new Date(valor);
+
+  if (isNaN(data.getTime())) {
+    return formatarData(valor);
+  }
+
+  return data.toLocaleString("pt-BR", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit"
+  });
 }
 
    // ============================================================
