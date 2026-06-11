@@ -1207,6 +1207,232 @@
     align-items: flex-start;
   }
 }
+    /* Ajustes área pública do aluno */
+
+.ficha-clean {
+  align-items: center;
+}
+
+.aluno-resumo-clean {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.aluno-resumo-clean span {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.aluno-resumo-clean strong {
+  color: #fff;
+}
+
+.treino-max summary {
+  padding: 18px;
+}
+
+.treino-max summary strong {
+  font-size: 20px;
+}
+
+.aluno-edit-card {
+  align-items: flex-start;
+}
+
+.aluno-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.aluno-edit-grid label,
+.aluno-edit-obs {
+  display: block;
+}
+
+.aluno-edit-grid span,
+.aluno-edit-obs span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.aluno-edit-grid input,
+.aluno-edit-obs textarea {
+  width: 100%;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  outline: none;
+  font-size: 14px;
+}
+
+.aluno-edit-grid input:focus,
+.aluno-edit-obs textarea:focus {
+  border-color: rgba(229,9,20,.75);
+  box-shadow: 0 0 0 3px rgba(229,9,20,.16);
+}
+
+.aluno-edit-obs {
+  margin-top: 10px;
+}
+
+.aluno-edit-obs textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.aluno-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+@media (max-width: 850px) {
+  .aluno-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .aluno-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aluno-edit-actions {
+    justify-content: stretch;
+  }
+
+  .aluno-edit-actions .btn {
+    width: 100%;
+  }
+}
+
+    /* Ajustes área pública do aluno */
+
+.ficha-clean {
+  align-items: center;
+}
+
+.aluno-resumo-clean {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.aluno-resumo-clean span {
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.1);
+  color: var(--muted);
+  border-radius: 999px;
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+.aluno-resumo-clean strong {
+  color: #fff;
+}
+
+.treino-max summary {
+  padding: 18px;
+}
+
+.treino-max summary strong {
+  font-size: 20px;
+}
+
+.aluno-edit-card {
+  align-items: flex-start;
+}
+
+.aluno-edit-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 12px;
+}
+
+.aluno-edit-grid label,
+.aluno-edit-obs {
+  display: block;
+}
+
+.aluno-edit-grid span,
+.aluno-edit-obs span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 5px;
+}
+
+.aluno-edit-grid input,
+.aluno-edit-obs textarea {
+  width: 100%;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,255,255,.12);
+  color: #fff;
+  border-radius: 12px;
+  padding: 10px;
+  outline: none;
+  font-size: 14px;
+}
+
+.aluno-edit-grid input:focus,
+.aluno-edit-obs textarea:focus {
+  border-color: rgba(229,9,20,.75);
+  box-shadow: 0 0 0 3px rgba(229,9,20,.16);
+}
+
+.aluno-edit-obs {
+  margin-top: 10px;
+}
+
+.aluno-edit-obs textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.aluno-edit-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+@media (max-width: 850px) {
+  .aluno-edit-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 520px) {
+  .aluno-edit-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .aluno-edit-actions {
+    justify-content: stretch;
+  }
+
+  .aluno-edit-actions .btn {
+    width: 100%;
+  }
+}
+    
     </style>
 </head>
 
@@ -1481,12 +1707,11 @@
 
 function renderFichaTreinoAlunoPublica(aluno, treino, exercicios) {
   const sessoes = ["Treino A", "Treino B", "Treino C", "Treino D"];
-
   const totalExercicios = exercicios.length;
 
   return `
     <div class="aluno-ficha-card">
-      <div class="aluno-ficha-top">
+      <div class="aluno-ficha-top ficha-clean">
         <div>
           <h2>${treino.titulo || "Ficha de treino"}</h2>
           <p>Professor: <strong>${treino.professor || "-"}</strong></p>
@@ -1497,38 +1722,22 @@ function renderFichaTreinoAlunoPublica(aluno, treino, exercicios) {
         </div>
       </div>
 
-      <div class="aluno-resumo-grid">
-        <div>
-          <span>Objetivo</span>
-          <strong>${treino.objetivo || aluno?.objetivo || "-"}</strong>
-        </div>
-
-        <div>
-          <span>Início</span>
-          <strong>${formatarData(treino.data_inicio)}</strong>
-        </div>
-
-        <div>
-          <span>Semanas</span>
-          <strong>${treino.semanas || "-"}</strong>
-        </div>
-
-        <div>
-          <span>Frequência</span>
-          <strong>${treino.frequencia || "-"}</strong>
-        </div>
-
-        <div>
-          <span>Mesociclo</span>
-          <strong>${treino.mesociclo || "-"}</strong>
-        </div>
-      </div>
+      ${
+        treino.mesociclo || treino.data_inicio
+          ? `
+            <div class="aluno-resumo-clean">
+              ${treino.mesociclo ? `<span>Mesociclo: <strong>${treino.mesociclo}</strong></span>` : ""}
+              ${treino.data_inicio ? `<span>Início: <strong>${formatarData(treino.data_inicio)}</strong></span>` : ""}
+            </div>
+          `
+          : ""
+      }
 
       ${
         treino.observacoes
           ? `
             <div class="aluno-observacao">
-              <span>Observações do professor</span>
+              <span>Orientação do professor</span>
               <p>${treino.observacoes}</p>
             </div>
           `
@@ -1549,18 +1758,18 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
   if (!exercicios.length) return "";
 
   return `
-    <details class="aluno-treino-details" ${aberto ? "open" : ""}>
+    <details class="aluno-treino-details treino-max" ${aberto ? "open" : ""}>
       <summary>
         <div>
           <strong>${sessao}</strong>
-          <span>${exercicios.length} exercícios cadastrados</span>
+          <span>${exercicios.length} exercícios</span>
         </div>
         <span class="summary-icon">⌄</span>
       </summary>
 
       <div class="aluno-exercicios-grid">
         ${exercicios.map((e, index) => `
-          <div class="aluno-exercicio-card">
+          <div class="aluno-exercicio-card aluno-edit-card">
             <div class="aluno-exercicio-numero">${index + 1}</div>
 
             <div class="aluno-exercicio-conteudo">
@@ -1571,44 +1780,71 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
                 </div>
               </div>
 
-              <div class="aluno-exercicio-info">
-                <div>
+              <div class="aluno-edit-grid">
+                <label>
                   <span>Séries</span>
-                  <strong>${e.series || "-"}</strong>
-                </div>
+                  <input id="pubSeries_${e.id}" value="${e.series || ""}" placeholder="Ex: 3">
+                </label>
 
-                <div>
+                <label>
                   <span>Repetições</span>
-                  <strong>${e.repeticoes || "-"}</strong>
-                </div>
+                  <input id="pubReps_${e.id}" value="${e.repeticoes || ""}" placeholder="Ex: 12">
+                </label>
 
-                <div>
+                <label>
                   <span>Pausa</span>
-                  <strong>${e.pausa || "-"}</strong>
-                </div>
+                  <input id="pubPausa_${e.id}" value="${e.pausa || ""}" placeholder="Ex: 45s">
+                </label>
 
-                <div>
+                <label>
                   <span>Cadência</span>
-                  <strong>${e.cadencia || "-"}</strong>
-                </div>
+                  <input id="pubCadencia_${e.id}" value="${e.cadencia || ""}" placeholder="Ex: 2-1-2">
+                </label>
 
-                <div>
-                  <span>Carga</span>
-                  <strong>${e.carga || "-"}</strong>
-                </div>
+                <label>
+                  <span>Carga / Peso</span>
+                  <input id="pubCarga_${e.id}" value="${e.carga || ""}" placeholder="Ex: 20kg">
+                </label>
               </div>
 
-              ${
-                e.observacoes
-                  ? `<div class="aluno-exercicio-obs">${e.observacoes}</div>`
-                  : ""
-              }
+              <label class="aluno-edit-obs">
+                <span>Observações</span>
+                <textarea id="pubObs_${e.id}" placeholder="Observações do exercício">${e.observacoes || ""}</textarea>
+              </label>
+
+              <div class="aluno-edit-actions">
+                <button class="btn btn-small btn-primary" onclick="salvarExercicioAluno('${e.id}')">
+                  Salvar alteração
+                </button>
+              </div>
             </div>
           </div>
         `).join("")}
       </div>
     </details>
   `;
+}
+    async function salvarExercicioAluno(id) {
+  const payload = {
+    series: document.getElementById(`pubSeries_${id}`).value.trim(),
+    repeticoes: document.getElementById(`pubReps_${id}`).value.trim(),
+    pausa: document.getElementById(`pubPausa_${id}`).value.trim(),
+    cadencia: document.getElementById(`pubCadencia_${id}`).value.trim(),
+    carga: document.getElementById(`pubCarga_${id}`).value.trim(),
+    observacoes: document.getElementById(`pubObs_${id}`).value.trim()
+  };
+
+  const { error } = await client
+    .from("treino_exercicios")
+    .update(payload)
+    .eq("id", id);
+
+  if (error) {
+    mostrarToast("Erro ao salvar exercício: " + error.message, "error");
+    return;
+  }
+
+  mostrarToast("Exercício atualizado com sucesso.");
 }
     
 
