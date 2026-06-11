@@ -3563,6 +3563,16 @@ async function selecionarAlunoConta(alunoId) {
       }
     }
 
+    function abrirWhatsAppMensagem(telefone, mensagem) {
+  const numero = limparTelefone(telefone);
+  const texto = encodeURIComponent(mensagem);
+
+  const url = `https://wa.me/55${numero}?text=${texto}`;
+
+  // Abre sempre na mesma aba/janela do WhatsApp
+  window.open(url, "whatsapp_ld_extreme");
+}
+
    async function mensagemWhatsappItemConta(alunoId, itemId, tipo) {
   const aluno = alunosCache.find(a => a.id === alunoId);
 
@@ -3674,8 +3684,8 @@ Seu total em aberto atualmente é de ${BRL.format(totalAberto)}.
 Qualquer dúvida, estamos à disposição.
   `.trim();
 
-  window.open(`https://wa.me/55${telefone}?text=${encodeURIComponent(mensagem)}`, "_blank");
-}
+abrirWhatsAppMensagem(aluno.telefone, mensagem);
+   }
 
   function formatarDataHoraConta(valor) {
   if (!valor) return "-";
