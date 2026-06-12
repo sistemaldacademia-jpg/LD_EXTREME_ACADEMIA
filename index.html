@@ -2428,16 +2428,11 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
             </div>
             <div class="form-group">
   <label>Senha do treino</label>
-  <div style="display:flex;gap:8px;align-items:center;">
-    <input
-      id="alunoSenhaTreino"
-      placeholder="Ex: 1234, ana123, treino10"
-      value="${aluno?.senha_treino || gerarSenhaTreinoAluno()}"
-    />
-    <button type="button" class="btn btn-small btn-blue" onclick="gerarNovaSenhaTreino()">
-      Gerar
-    </button>
-  </div>
+  <input
+    id="alunoSenhaTreino"
+    placeholder="Digite a senha do aluno"
+    value="${aluno?.senha_treino || ""}"
+  />
 </div>
 
             <div class="form-group">
@@ -2473,9 +2468,14 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
             </div>
 
             <div class="form-group">
-              <label>Senha do treino</label>
-              <input id="alunoSenhaTreino" value="${aluno?.senha_treino || gerarSenhaTreino()}" />
-            </div>
+  <label>Senha do treino</label>
+  <input
+    id="alunoSenhaTreino"
+    required
+    placeholder="Digite a senha do aluno"
+    value="${aluno?.senha_treino || ""}"
+  />
+</div>
 
             <div class="form-group">
               <label>Objetivo</label>
@@ -2521,15 +2521,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         document.getElementById("alunoValor").value = Number(plano.valor).toFixed(2);
       }
     }
-    function gerarSenhaTreinoAluno() {
-  const letras = "ABCDEFGHJKLMNPQRSTUVWXYZ";
-  const numeros = "23456789";
-
-  let senha = "";
-
-  for (let i = 0; i < 3; i++) {
-    senha += letras[Math.floor(Math.random() * letras.length)];
-  }
+ 
 
   for (let i = 0; i < 3; i++) {
     senha += numeros[Math.floor(Math.random() * numeros.length)];
@@ -2538,15 +2530,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
   return senha;
 }
 
-function gerarNovaSenhaTreino() {
-  const campo = document.getElementById("alunoSenhaTreino");
-
-  if (campo) {
-    campo.value = gerarSenhaTreinoAluno();
-  }
-}
-
-    async function salvarAluno(event, id) {
+async function salvarAluno(event, id) {
       event.preventDefault();
 
       const planoId = document.getElementById("alunoPlano").value;
@@ -2564,7 +2548,7 @@ function gerarNovaSenhaTreino() {
         lesoes_restricoes: document.getElementById("alunoLesoes").value.trim(),
         observacoes: document.getElementById("alunoObs").value.trim(),
         atualizado_em: new Date().toISOString(),
-        senha_treino: document.getElementById("alunoSenhaTreino")?.value.trim() || gerarSenhaTreinoAluno(),
+        senha_treino: document.getElementById("alunoSenhaTreino").value.trim(),
       };
 
       if (!payload.nome) {
