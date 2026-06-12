@@ -1478,7 +1478,35 @@
 .conta-toolbar input {
   width: 100%;
 }
-    
+    .password-wrap {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-wrap input {
+  width: 100%;
+  padding-right: 44px;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+  font-size: 18px;
+  color: var(--muted);
+  padding: 4px;
+}
+
+.password-toggle:hover {
+  color: #fff;
+}
+
+  
     </style>
 </head>
 
@@ -1502,7 +1530,20 @@
 
           <div class="form-group">
             <label>Senha do treino</label>
-            <input id="publicSenhaTreino" type="password" placeholder="Senha do aluno" />
+           <div class="password-wrap">
+  <input
+    id="publicSenhaTreino"
+    type="password"
+    required
+    placeholder="Senha do aluno"
+  />
+  <button
+    type="button"
+    class="password-toggle"
+    onclick="toggleSenha('publicSenhaTreino', this)"
+    title="Mostrar senha"
+  >👁</button>
+</div>
           </div>
 
           <div class="form-group" style="align-self:end;">
@@ -1532,8 +1573,10 @@
 
       <div class="form-group">
         <label>Senha</label>
-        <input id="loginSenha" type="password" placeholder="Digite sua senha" autocomplete="current-password" />
-      </div>
+       <div class="password-wrap">
+  <input id="loginSenha" type="password" placeholder="Senha" />
+  <button type="button" class="password-toggle" onclick="toggleSenha('loginSenha', this)" title="Mostrar senha">👁</button>
+</div>
 
       <button class="btn btn-primary full" onclick="login()">Entrar no sistema</button>
 
@@ -1672,6 +1715,21 @@
         el.className = "toast";
       }, 3500);
     }
+
+    function toggleSenha(inputId, botao) {
+  const input = document.getElementById(inputId);
+  if (!input) return;
+
+  if (input.type === "password") {
+    input.type = "text";
+    botao.textContent = "🙈";
+    botao.title = "Ocultar senha";
+  } else {
+    input.type = "password";
+    botao.textContent = "👁";
+    botao.title = "Mostrar senha";
+  }
+}
 
  async function acessarTreinoPublico() {
   const codigo = document.getElementById("publicCodigoAluno").value.trim().toUpperCase();
@@ -2460,11 +2518,16 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
             <div class="form-group">
   <label>Senha do treino</label>
   <input
+    <div class="password-wrap">
+  <input
     id="alunoSenhaTreino"
+    type="password"
     required
     placeholder="Digite a senha do aluno"
     value="${aluno?.senha_treino || ""}"
   />
+  <button type="button" class="password-toggle" onclick="toggleSenha('alunoSenhaTreino', this)" title="Mostrar senha">👁</button>
+</div>
 </div>
 
             <div class="form-group">
