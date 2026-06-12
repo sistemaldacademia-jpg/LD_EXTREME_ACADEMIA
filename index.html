@@ -2426,6 +2426,19 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
               <label>Telefone</label>
               <input id="alunoTelefone" value="${aluno?.telefone || ""}" placeholder="55 99999-9999" />
             </div>
+            <div class="form-group">
+  <label>Senha do treino</label>
+  <div style="display:flex;gap:8px;align-items:center;">
+    <input
+      id="alunoSenhaTreino"
+      placeholder="Ex: 1234, ana123, treino10"
+      value="${aluno?.senha_treino || gerarSenhaTreinoAluno()}"
+    />
+    <button type="button" class="btn btn-small btn-blue" onclick="gerarNovaSenhaTreino()">
+      Gerar
+    </button>
+  </div>
+</div>
 
             <div class="form-group">
               <label>Data de nascimento</label>
@@ -2508,6 +2521,30 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         document.getElementById("alunoValor").value = Number(plano.valor).toFixed(2);
       }
     }
+    function gerarSenhaTreinoAluno() {
+  const letras = "ABCDEFGHJKLMNPQRSTUVWXYZ";
+  const numeros = "23456789";
+
+  let senha = "";
+
+  for (let i = 0; i < 3; i++) {
+    senha += letras[Math.floor(Math.random() * letras.length)];
+  }
+
+  for (let i = 0; i < 3; i++) {
+    senha += numeros[Math.floor(Math.random() * numeros.length)];
+  }
+
+  return senha;
+}
+
+function gerarNovaSenhaTreino() {
+  const campo = document.getElementById("alunoSenhaTreino");
+
+  if (campo) {
+    campo.value = gerarSenhaTreinoAluno();
+  }
+}
 
     async function salvarAluno(event, id) {
       event.preventDefault();
@@ -2523,11 +2560,11 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         status: document.getElementById("alunoStatus").value,
         plano_id: planoId || null,
         valor_mensalidade: Number(document.getElementById("alunoValor").value || plano?.valor || 0),
-        senha_treino: document.getElementById("alunoSenhaTreino").value.trim(),
         objetivo: document.getElementById("alunoObjetivo").value,
         lesoes_restricoes: document.getElementById("alunoLesoes").value.trim(),
         observacoes: document.getElementById("alunoObs").value.trim(),
         atualizado_em: new Date().toISOString()
+        senha_treino: document.getElementById("alunoSenhaTreino")?.value.trim() || gerarSenhaTreinoAluno(),
       };
 
       if (!payload.nome) {
