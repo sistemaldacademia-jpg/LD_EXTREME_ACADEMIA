@@ -2574,13 +2574,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         document.getElementById("alunoValor").value = Number(plano.valor).toFixed(2);
       }
     }
- 
-
-  for (let i = 0; i < 3; i++) {
-    senha += numeros[Math.floor(Math.random() * numeros.length)];
-  }
-
-async function salvarAluno(event, id) {
+ async function salvarAluno(event, id) {
       event.preventDefault();
 
       const planoId = document.getElementById("alunoPlano").value;
