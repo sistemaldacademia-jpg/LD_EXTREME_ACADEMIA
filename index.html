@@ -2563,7 +2563,7 @@ function gerarNovaSenhaTreino() {
         objetivo: document.getElementById("alunoObjetivo").value,
         lesoes_restricoes: document.getElementById("alunoLesoes").value.trim(),
         observacoes: document.getElementById("alunoObs").value.trim(),
-        atualizado_em: new Date().toISOString()
+        atualizado_em: new Date().toISOString(),
         senha_treino: document.getElementById("alunoSenhaTreino")?.value.trim() || gerarSenhaTreinoAluno(),
       };
 
