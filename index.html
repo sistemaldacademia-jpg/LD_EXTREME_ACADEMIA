@@ -2404,8 +2404,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
   await carregarBase();
 
   const aluno = id ? alunosCache.find(a => a.id === id) : null;
-
-  console.log("Planos no modal aluno:", planosCache);
+    console.log("Planos no modal aluno:", planosCache);
 
   const planoOptions = planosCache
     .filter(p => p.ativo !== false)
@@ -2526,9 +2525,6 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
   for (let i = 0; i < 3; i++) {
     senha += numeros[Math.floor(Math.random() * numeros.length)];
   }
-
-  return senha;
-}
 
 async function salvarAluno(event, id) {
       event.preventDefault();
