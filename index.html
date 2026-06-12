@@ -2425,16 +2425,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
               <label>Telefone</label>
               <input id="alunoTelefone" value="${aluno?.telefone || ""}" placeholder="55 99999-9999" />
             </div>
-            <div class="form-group">
-  <label>Senha do treino</label>
-  <input
-    id="alunoSenhaTreino"
-    placeholder="Digite a senha do aluno"
-    value="${aluno?.senha_treino || ""}"
-  />
-</div>
-
-            <div class="form-group">
+          <div class="form-group">
               <label>Data de nascimento</label>
               <input id="alunoNascimento" type="date" value="${aluno?.data_nascimento || ""}" />
             </div>
