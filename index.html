@@ -3718,10 +3718,20 @@ abrirWhatsAppMensagem(aluno.telefone, mensagem);
 
 async function renderTreinos() {
   await carregarBase();
+  const { data: treinosExistentes } = await client
+  .from("treinos")
+  .select("aluno_id")
+  .eq("ativo", true);
 
-  const alunoOptions = alunosCache.filter(a => a.ativo).map(a => `
+const alunosComTreinoIds = new Set((treinosExistentes || []).map(t => t.aluno_id));
+window.alunosComTreinoIds = alunosComTreinoIds;
+
+  const alunoOptions = alunosCache
+  .filter(a => a.ativo && alunosComTreinoIds.has(a.id))
+  .map(a => `
     <option value="${a.id}">${a.codigo} - ${a.nome}</option>
-  `).join("");
+  `)
+  .join("");
 
   const html = `
     <div class="panel">
@@ -3773,12 +3783,12 @@ async function renderTreinos() {
   }
 
   const encontrados = alunosCache
-    .filter(a => a.ativo)
-    .filter(a =>
-      String(a.nome || "").toLowerCase().includes(termo) ||
-      String(a.codigo || "").toLowerCase().includes(termo)
-    )
-    .slice(0, 8);
+  .filter(a => a.ativo && window.alunosComTreinoIds?.has(a.id))
+  .filter(a =>
+    String(a.nome || "").toLowerCase().includes(termo) ||
+    String(a.codigo || "").toLowerCase().includes(termo)
+  )
+  .slice(0, 8);
 
   if (!encontrados.length) {
     box.classList.remove("hidden");
