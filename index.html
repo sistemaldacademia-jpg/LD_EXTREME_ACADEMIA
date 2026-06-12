@@ -1566,26 +1566,27 @@
         </div>
       </div>
 
-      <div class="form-group">
-        <label>Usuário</label>
-        <input id="loginUsuario" placeholder="Digite seu usuário" autocomplete="username" />
-      </div>
-
-      <div class="form-group">
-        <label>Senha</label>
-       <div class="password-wrap">
-  <input id="loginSenha" type="password" placeholder="Senha" />
-  <button
-    type="button"
-    class="password-toggle"
-    onclick="toggleSenha('loginSenha', this)"
-    title="Mostrar senha"
-  >👁️</button>
+     <div class="form-group">
+  <label>Usuário</label>
+  <input id="loginUsuario" placeholder="Usuário" />
 </div>
 
-      <button class="btn btn-primary full" onclick="login()">Entrar no sistema</button>
+     <div class="form-group">
+  <label>Senha</label>
+  <div class="password-wrap">
+    <input id="loginSenha" type="password" placeholder="Senha" />
+    <button
+      type="button"
+      class="password-toggle"
+      onclick="toggleSenha('loginSenha', this)"
+      title="Mostrar senha"
+    >👁️</button>
+  </div>
+</div>
 
-      <div id="loginErro" class="error-box hidden"></div>
+<button class="btn btn-primary full" onclick="login()">Entrar no sistema</button>
+
+<div id="loginError" class="error-box hidden"></div>
 
       <div style="margin-top:18px;color:var(--muted);font-size:13px;line-height:1.5;">
         <strong style="color:#fff;">Acesso inicial</strong><br>
