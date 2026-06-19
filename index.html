@@ -4993,29 +4993,8 @@ async function renderVendas() {
         <div class="form-group">
   <label>Aluno / Cliente</label>
 
-  <div class="venda-aluno-box">
-    <input
-      id="buscaAlunoVenda"
-      placeholder="Pesquisar aluno por nome, código ou telefone..."
-      oninput="filtrarAlunosVenda()"
-      autocomplete="off"
-    >
-
-    <div id="resultadoBuscaAlunoVenda" class="resultado-busca-aluno hidden"></div>
-
-    <div id="alunoVendaSelecionado" class="aluno-venda-selecionado">
-      <span>Cliente avulso / sem aluno selecionado</span>
-    </div>
-
-    <button
-      type="button"
-      class="btn btn-small btn-ghost"
-      onclick="limparAlunoVenda()"
-    >
-      Limpar aluno
-    </button>
-
-    <select id="vendaAluno" class="hidden">
+ 
+ <select id="vendaAluno" class="hidden">
       <option value="">Cliente avulso / sem aluno</option>
       ${alunoOptions}
     </select>
@@ -5044,7 +5023,15 @@ async function renderVendas() {
         <div class="form-grid">
           <div class="form-group span-2">
             <label>Produto / código de barras</label>
-            <input id="vendaBuscaProduto" placeholder="Digite nome ou passe o código de barras" onkeydown="atalhoCodigoBarrasVenda(event)" />
+            <input
+  id="vendaBuscaProduto"
+  placeholder="Digite nome ou passe o código de barras"
+  oninput="filtrarProdutosVenda()"
+  onkeydown="atalhoCodigoBarrasVenda(event)"
+  autocomplete="off"
+/>
+
+<div id="resultadoBuscaProdutoVenda" class="resultado-busca-aluno hidden"></div>
           </div>
 
           <div class="form-group">
@@ -5151,6 +5138,63 @@ function atalhoCodigoBarrasVenda(event) {
     adicionarProdutoVenda();
   }
 }
+
+function filtrarProdutosVenda() {
+  const termo = document.getElementById("vendaBuscaProduto").value.trim().toLowerCase();
+  const box = document.getElementById("resultadoBuscaProdutoVenda");
+
+  if (!box) return;
+
+  if (!termo) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  const encontrados = produtosCache
+    .filter(p => p.ativo !== false)
+    .filter(p =>
+      String(p.nome || "").toLowerCase().includes(termo) ||
+      String(p.codigo_barras || "").toLowerCase().includes(termo)
+    )
+    .slice(0, 8);
+
+  if (!encontrados.length) {
+    box.classList.remove("hidden");
+    box.innerHTML = `<div class="busca-aluno-vazio">Nenhum produto encontrado.</div>`;
+    return;
+  }
+
+  box.classList.remove("hidden");
+
+  box.innerHTML = encontrados.map(p => `
+    <button type="button" class="busca-aluno-item" onclick="selecionarProdutoVenda('${p.id}')">
+      <strong>${p.nome}</strong>
+      <span>
+        Código: ${p.codigo_barras || "-"} |
+        Estoque: ${p.quantidade_estoque || 0} |
+        Valor: ${BRL.format(Number(p.preco_venda || 0))}
+      </span>
+    </button>
+  `).join("");
+}
+
+function selecionarProdutoVenda(produtoId) {
+  const produto = produtosCache.find(p => p.id === produtoId);
+
+  if (!produto) return;
+
+  document.getElementById("vendaBuscaProduto").value = produto.nome;
+
+  const box = document.getElementById("resultadoBuscaProdutoVenda");
+  if (box) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+  }
+
+  document.getElementById("vendaQtdProduto")?.focus();
+}
+    
 
 function encontrarProdutoVenda(texto) {
   const termo = String(texto || "").trim().toLowerCase();
@@ -5309,21 +5353,11 @@ function selecionarAlunoVenda(alunoId) {
   document.getElementById("vendaAluno").value = alunoId;
   document.getElementById("buscaAlunoVenda").value = aluno ? `${aluno.nome} - ${aluno.codigo || ""}` : "";
 
-  const clienteAvulso = document.getElementById("vendaClienteAvulso");
-  if (clienteAvulso) clienteAvulso.value = "";
-
-  const boxSelecionado = document.getElementById("alunoVendaSelecionado");
-
-  if (boxSelecionado && aluno) {
-    boxSelecionado.innerHTML = `
-      <strong>${aluno.nome}</strong>
-      <span>${aluno.codigo || ""}${aluno.telefone ? " | " + aluno.telefone : ""}</span>
-    `;
-    boxSelecionado.classList.add("selecionado");
+  const resultado = document.getElementById("resultadoBuscaAlunoVenda");
+  if (resultado) {
+    resultado.classList.add("hidden");
+    resultado.innerHTML = "";
   }
-
-  document.getElementById("resultadoBuscaAlunoVenda").classList.add("hidden");
-  document.getElementById("resultadoBuscaAlunoVenda").innerHTML = "";
 }
 
     function limparAlunoVenda() {
@@ -5349,6 +5383,10 @@ async function finalizarVenda() {
   const alunoId = document.getElementById("vendaAluno").value || null;
   const forma = document.getElementById("vendaForma").value;
   const clienteNome = document.getElementById("vendaClienteAvulso").value.trim();
+  if (alunoId && clienteNome) {
+  mostrarToast("Escolha apenas uma opção: aluno cadastrado ou cliente avulso.", "error");
+  return;
+}
 
   if (!carrinhoVenda.length) {
     mostrarToast("Adicione pelo menos um produto.", "error");
