@@ -1723,19 +1723,19 @@
     }
 
     function toggleSenha(inputId, botao) {
-  const input = document.getElementById(inputId);
-  if (!input) return;
+      const input = document.getElementById(inputId);
+      if (!input) return;
 
-  if (input.type === "password") {
-    input.type = "text";
-    botao.textContent = "👁️‍🗨️";
-    botao.title = "Ocultar senha";
-  } else {
-    input.type = "password";
-    botao.textContent = "👁";
-    botao.title = "Mostrar senha";
-  }
-}
+      if (input.type === "password") {
+        input.type = "text";
+        botao.textContent = "👁️‍🗨️";
+        botao.title = "Ocultar senha";
+      } else {
+        input.type = "password";
+        botao.textContent = "👁️";
+        botao.title = "Mostrar senha";
+      }
+    }
 
  async function acessarTreinoPublico() {
   const codigo = document.getElementById("publicCodigoAluno").value.trim().toUpperCase();
@@ -1992,11 +1992,6 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         ano: d.getFullYear()
       };
     }
-
-    function gerarSenhaTreino() {
-      return Math.random().toString(36).slice(2, 8).toUpperCase();
-    }
-
     function usuarioEhAdmin() {
       return usuarioLogado && usuarioLogado.perfil === "admin";
     }
@@ -2004,7 +1999,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
     async function login() {
       const usuario = document.getElementById("loginUsuario").value.trim();
       const senha = document.getElementById("loginSenha").value.trim();
-      const erro = document.getElementById("loginErro");
+      const erro = document.getElementById("loginError");
 
       erro.classList.add("hidden");
       erro.textContent = "";
@@ -2522,19 +2517,23 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
             </div>
 
             <div class="form-group">
-  <label>Senha do treino</label>
-  <input
-    <div class="password-wrap">
-  <input
-    id="alunoSenhaTreino"
-    type="password"
-    required
-    placeholder="Digite a senha do aluno"
-    value="${aluno?.senha_treino || ""}"
-  />
-  <button type="button" class="password-toggle" onclick="toggleSenha('alunoSenhaTreino', this)" title="Mostrar senha">👁</button>
-</div>
-</div>
+              <label>Senha do treino</label>
+              <div class="password-wrap">
+                <input
+                  id="alunoSenhaTreino"
+                  type="password"
+                  required
+                  placeholder="Digite a senha do aluno"
+                  value="${aluno?.senha_treino || ""}"
+                />
+                <button
+                  type="button"
+                  class="password-toggle"
+                  onclick="toggleSenha('alunoSenhaTreino', this)"
+                  title="Mostrar senha"
+                >👁️</button>
+              </div>
+            </div>
 
             <div class="form-group">
               <label>Objetivo</label>
