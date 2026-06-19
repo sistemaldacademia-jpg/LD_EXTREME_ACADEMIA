@@ -1541,6 +1541,137 @@
 }
 
   
+    
+
+/* ============================================================
+   ÁREA DO ALUNO - FICHA COMPACTA NO CELULAR
+============================================================ */
+.aluno-exercicios-compactos {
+  gap: 10px;
+}
+
+.aluno-card-compacto {
+  display: block;
+  padding: 13px;
+}
+
+.aluno-exercicio-topo {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px;
+  align-items: center;
+}
+
+.aluno-exercicio-numero.compacto {
+  width: 40px;
+  height: 40px;
+  border-radius: 14px;
+  font-size: 18px;
+}
+
+.aluno-exercicio-titulo span {
+  display: block;
+  color: var(--muted);
+  font-size: 11px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+
+.aluno-exercicio-titulo h3 {
+  font-size: 19px;
+  line-height: 1.15;
+  color: #fff;
+}
+
+.aluno-exercicio-resumo {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.aluno-exercicio-resumo div {
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 9px 8px;
+}
+
+.aluno-exercicio-resumo span,
+.aluno-exercicio-linha-extra span {
+  display: block;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.aluno-exercicio-resumo strong,
+.aluno-exercicio-linha-extra strong {
+  color: #fff;
+  font-size: 14px;
+}
+
+.aluno-exercicio-linha-extra,
+.aluno-exercicio-obs-compacta {
+  margin-top: 9px;
+  background: rgba(255,255,255,.045);
+  border: 1px solid rgba(255,255,255,.08);
+  border-radius: 12px;
+  padding: 9px 10px;
+  color: #ddd;
+  font-size: 13px;
+}
+
+.aluno-edit-box {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255,255,255,.1);
+}
+
+@media (max-width: 520px) {
+  .aluno-treino-details summary {
+    padding: 14px;
+  }
+
+  .aluno-treino-details summary strong {
+    font-size: 25px;
+  }
+
+  .aluno-treino-details summary span {
+    font-size: 15px;
+  }
+
+  .aluno-exercicio-topo {
+    grid-template-columns: auto 1fr;
+  }
+
+  .btn-editar-exercicio {
+    grid-column: 1 / -1;
+    width: 100%;
+    margin-top: 4px;
+  }
+
+  .aluno-exercicio-resumo {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .aluno-card-compacto {
+    padding: 12px;
+  }
+
+  .aluno-exercicio-titulo h3 {
+    font-size: 22px;
+  }
+
+  .aluno-edit-grid input,
+  .aluno-edit-obs textarea {
+    font-size: 16px;
+  }
+}
+
     </style>
 </head>
 
@@ -1911,63 +2042,108 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         <span class="summary-icon">⌄</span>
       </summary>
 
-      <div class="aluno-exercicios-grid">
-        ${exercicios.map((e, index) => `
-          <div class="aluno-exercicio-card aluno-edit-card">
-            <div class="aluno-exercicio-numero">${index + 1}</div>
+      <div class="aluno-exercicios-grid aluno-exercicios-compactos">
+        ${exercicios.map((e, index) => {
+          const series = e.series || "-";
+          const reps = e.repeticoes || "-";
+          const pausa = e.pausa || "-";
+          const cadencia = e.cadencia || "-";
+          const carga = e.carga || "-";
+          const obs = e.observacoes || "";
 
-            <div class="aluno-exercicio-conteudo">
-              <div class="aluno-exercicio-head">
-                <div>
+          return `
+            <div class="aluno-exercicio-card aluno-card-compacto">
+              <div class="aluno-exercicio-topo">
+                <div class="aluno-exercicio-numero compacto">${index + 1}</div>
+
+                <div class="aluno-exercicio-titulo">
                   <span>${e.grupo_muscular || "Exercício"}</span>
                   <h3>${e.exercicio}</h3>
                 </div>
-              </div>
 
-              <div class="aluno-edit-grid">
-                <label>
-                  <span>Séries</span>
-                  <input id="pubSeries_${e.id}" value="${e.series || ""}" placeholder="Ex: 3">
-                </label>
-
-                <label>
-                  <span>Repetições</span>
-                  <input id="pubReps_${e.id}" value="${e.repeticoes || ""}" placeholder="Ex: 12">
-                </label>
-
-                <label>
-                  <span>Pausa</span>
-                  <input id="pubPausa_${e.id}" value="${e.pausa || ""}" placeholder="Ex: 45s">
-                </label>
-
-                <label>
-                  <span>Cadência</span>
-                  <input id="pubCadencia_${e.id}" value="${e.cadencia || ""}" placeholder="Ex: 2-1-2">
-                </label>
-
-                <label>
-                  <span>Carga / Peso</span>
-                  <input id="pubCarga_${e.id}" value="${e.carga || ""}" placeholder="Ex: 20kg">
-                </label>
-              </div>
-
-              <label class="aluno-edit-obs">
-                <span>Observações</span>
-                <textarea id="pubObs_${e.id}" placeholder="Observações do exercício">${e.observacoes || ""}</textarea>
-              </label>
-
-              <div class="aluno-edit-actions">
-                <button class="btn btn-small btn-primary" onclick="salvarExercicioAluno('${e.id}')">
-                  Salvar alteração
+                <button
+                  type="button"
+                  class="btn btn-small btn-ghost btn-editar-exercicio"
+                  onclick="toggleEditarExercicioAluno('${e.id}')"
+                >
+                  Editar
                 </button>
               </div>
+
+              <div class="aluno-exercicio-resumo">
+                <div>
+                  <span>Séries</span>
+                  <strong id="resSeries_${e.id}">${series}</strong>
+                </div>
+                <div>
+                  <span>Reps</span>
+                  <strong id="resReps_${e.id}">${reps}</strong>
+                </div>
+                <div>
+                  <span>Pausa</span>
+                  <strong id="resPausa_${e.id}">${pausa}</strong>
+                </div>
+                <div>
+                  <span>Carga</span>
+                  <strong id="resCarga_${e.id}">${carga}</strong>
+                </div>
+              </div>
+
+              ${cadencia !== "-" ? `<div class="aluno-exercicio-linha-extra"><span>Cadência:</span> <strong id="resCadencia_${e.id}">${cadencia}</strong></div>` : `<div class="aluno-exercicio-linha-extra hidden"><span>Cadência:</span> <strong id="resCadencia_${e.id}">${cadencia}</strong></div>`}
+              ${obs ? `<div class="aluno-exercicio-obs-compacta" id="resObsBox_${e.id}">${obs}</div>` : `<div class="aluno-exercicio-obs-compacta hidden" id="resObsBox_${e.id}"></div>`}
+
+              <div id="editBox_${e.id}" class="aluno-edit-box hidden">
+                <div class="aluno-edit-grid">
+                  <label>
+                    <span>Séries</span>
+                    <input id="pubSeries_${e.id}" value="${e.series || ""}" placeholder="Ex: 3">
+                  </label>
+
+                  <label>
+                    <span>Repetições</span>
+                    <input id="pubReps_${e.id}" value="${e.repeticoes || ""}" placeholder="Ex: 12">
+                  </label>
+
+                  <label>
+                    <span>Pausa</span>
+                    <input id="pubPausa_${e.id}" value="${e.pausa || ""}" placeholder="Ex: 45s">
+                  </label>
+
+                  <label>
+                    <span>Cadência</span>
+                    <input id="pubCadencia_${e.id}" value="${e.cadencia || ""}" placeholder="Ex: 2-1-2">
+                  </label>
+
+                  <label>
+                    <span>Carga / Peso</span>
+                    <input id="pubCarga_${e.id}" value="${e.carga || ""}" placeholder="Ex: 20kg">
+                  </label>
+                </div>
+
+                <label class="aluno-edit-obs">
+                  <span>Observações</span>
+                  <textarea id="pubObs_${e.id}" placeholder="Observações do exercício">${e.observacoes || ""}</textarea>
+                </label>
+
+                <div class="aluno-edit-actions">
+                  <button class="btn btn-small btn-primary" onclick="salvarExercicioAluno('${e.id}')">
+                    Salvar alteração
+                  </button>
+                </div>
+              </div>
             </div>
-          </div>
-        `).join("")}
+          `;
+        }).join("")}
       </div>
     </details>
   `;
 }
+function toggleEditarExercicioAluno(id) {
+  const box = document.getElementById(`editBox_${id}`);
+  if (!box) return;
+  box.classList.toggle("hidden");
+}
+
     async function salvarExercicioAluno(id) {
   const payload = {
     series: document.getElementById(`pubSeries_${id}`).value.trim(),
@@ -1987,6 +2163,33 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
     mostrarToast("Erro ao salvar exercício: " + error.message, "error");
     return;
   }
+
+  const series = payload.series || "-";
+  const reps = payload.repeticoes || "-";
+  const pausa = payload.pausa || "-";
+  const cadencia = payload.cadencia || "-";
+  const carga = payload.carga || "-";
+
+  const resSeries = document.getElementById(`resSeries_${id}`);
+  const resReps = document.getElementById(`resReps_${id}`);
+  const resPausa = document.getElementById(`resPausa_${id}`);
+  const resCadencia = document.getElementById(`resCadencia_${id}`);
+  const resCarga = document.getElementById(`resCarga_${id}`);
+  const resObsBox = document.getElementById(`resObsBox_${id}`);
+  const editBox = document.getElementById(`editBox_${id}`);
+
+  if (resSeries) resSeries.textContent = series;
+  if (resReps) resReps.textContent = reps;
+  if (resPausa) resPausa.textContent = pausa;
+  if (resCadencia) resCadencia.textContent = cadencia;
+  if (resCarga) resCarga.textContent = carga;
+
+  if (resObsBox) {
+    resObsBox.textContent = payload.observacoes || "";
+    resObsBox.classList.toggle("hidden", !payload.observacoes);
+  }
+
+  if (editBox) editBox.classList.add("hidden");
 
   mostrarToast("Exercício atualizado com sucesso.");
 }
