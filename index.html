@@ -2870,7 +2870,55 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
     async function renderMensalidades() {
       await carregarBase();
 
+      const hoje = new Date();
+      const mesAtual = String(hoje.getMonth() + 1).padStart(2, "0");
+      const anoAtual = hoje.getFullYear();
+
       const html = `
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Gerar mensalidades do mês</h2>
+              <p>Escolha o mês e o ano para gerar as mensalidades dos alunos ativos</p>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group">
+              <label>Mês</label>
+              <select id="gerarMensalidadeMes">
+                <option value="1" ${mesAtual === "01" ? "selected" : ""}>Janeiro</option>
+                <option value="2" ${mesAtual === "02" ? "selected" : ""}>Fevereiro</option>
+                <option value="3" ${mesAtual === "03" ? "selected" : ""}>Março</option>
+                <option value="4" ${mesAtual === "04" ? "selected" : ""}>Abril</option>
+                <option value="5" ${mesAtual === "05" ? "selected" : ""}>Maio</option>
+                <option value="6" ${mesAtual === "06" ? "selected" : ""}>Junho</option>
+                <option value="7" ${mesAtual === "07" ? "selected" : ""}>Julho</option>
+                <option value="8" ${mesAtual === "08" ? "selected" : ""}>Agosto</option>
+                <option value="9" ${mesAtual === "09" ? "selected" : ""}>Setembro</option>
+                <option value="10" ${mesAtual === "10" ? "selected" : ""}>Outubro</option>
+                <option value="11" ${mesAtual === "11" ? "selected" : ""}>Novembro</option>
+                <option value="12" ${mesAtual === "12" ? "selected" : ""}>Dezembro</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Ano</label>
+              <input id="gerarMensalidadeAno" type="number" value="${anoAtual}" />
+            </div>
+
+            <div class="form-group" style="align-self:end;">
+              <button class="btn btn-primary full" onclick="gerarMensalidadesDoMes()">
+                Gerar mensalidades
+              </button>
+            </div>
+          </div>
+
+          <div style="margin-top:12px;color:var(--muted);font-size:13px;line-height:1.5;">
+            Ao dar baixa, o sistema não cria mais a próxima mensalidade automaticamente. Use este botão para gerar o mês desejado. O sistema não duplica mensalidade já existente para o mesmo aluno no mesmo mês.
+          </div>
+        </div>
+
         <div class="panel">
           <div class="panel-header">
             <div>
@@ -2882,6 +2930,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
 
           <div class="toolbar">
             <input id="buscaMensalidade" placeholder="Buscar por aluno..." oninput="filtrarMensalidades()" />
+
             <select id="filtroStatusMensalidade" onchange="filtrarMensalidades()">
               <option value="">Todos os status</option>
               <option value="Pendente">Pendente</option>
@@ -2889,6 +2938,30 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
               <option value="Pago">Pago</option>
               <option value="Cancelado">Cancelado</option>
             </select>
+
+            <select id="filtroMesMensalidade" onchange="filtrarMensalidades()">
+              <option value="">Todos os meses</option>
+              <option value="1">Janeiro</option>
+              <option value="2">Fevereiro</option>
+              <option value="3">Março</option>
+              <option value="4">Abril</option>
+              <option value="5">Maio</option>
+              <option value="6">Junho</option>
+              <option value="7">Julho</option>
+              <option value="8">Agosto</option>
+              <option value="9">Setembro</option>
+              <option value="10">Outubro</option>
+              <option value="11">Novembro</option>
+              <option value="12">Dezembro</option>
+            </select>
+
+            <input
+              id="filtroAnoMensalidade"
+              type="number"
+              placeholder="Ano"
+              value="${anoAtual}"
+              oninput="filtrarMensalidades()"
+            />
           </div>
 
           <div class="table-wrap">
@@ -2918,12 +2991,17 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
     function filtrarMensalidades() {
       const busca = (document.getElementById("buscaMensalidade")?.value || "").toLowerCase();
       const status = document.getElementById("filtroStatusMensalidade")?.value || "";
+      const mes = document.getElementById("filtroMesMensalidade")?.value || "";
+      const ano = document.getElementById("filtroAnoMensalidade")?.value || "";
 
       const lista = mensalidadesCache.filter(m => {
         const texto = `${m.alunos?.nome || ""} ${m.alunos?.codigo || ""}`.toLowerCase();
         const okBusca = texto.includes(busca);
         const okStatus = !status || m.status === status;
-        return okBusca && okStatus;
+        const okMes = !mes || Number(m.competencia_mes) === Number(mes);
+        const okAno = !ano || Number(m.competencia_ano) === Number(ano);
+
+        return okBusca && okStatus && okMes && okAno;
       });
 
       const tbody = document.getElementById("tbodyMensalidades");
@@ -2963,6 +3041,95 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
           </td>
         </tr>
       `).join("");
+    }
+
+    async function gerarMensalidadesDoMes() {
+      const mes = Number(document.getElementById("gerarMensalidadeMes").value);
+      const ano = Number(document.getElementById("gerarMensalidadeAno").value);
+
+      if (!mes || !ano) {
+        mostrarToast("Informe mês e ano para gerar as mensalidades.", "error");
+        return;
+      }
+
+      const nomesMeses = [
+        "",
+        "Janeiro",
+        "Fevereiro",
+        "Março",
+        "Abril",
+        "Maio",
+        "Junho",
+        "Julho",
+        "Agosto",
+        "Setembro",
+        "Outubro",
+        "Novembro",
+        "Dezembro"
+      ];
+
+      const confirmar = confirm(
+        `Deseja gerar as mensalidades de ${nomesMeses[mes]}/${ano} para todos os alunos ativos?`
+      );
+
+      if (!confirmar) return;
+
+      await carregarBase();
+
+      let criadas = 0;
+      let ignoradas = 0;
+      let erros = 0;
+
+      for (const aluno of alunosCache.filter(a => a.ativo)) {
+        const jaExiste = mensalidadesCache.some(m =>
+          m.aluno_id === aluno.id &&
+          Number(m.competencia_mes) === mes &&
+          Number(m.competencia_ano) === ano &&
+          m.status !== "Cancelado"
+        );
+
+        if (jaExiste) {
+          ignoradas++;
+          continue;
+        }
+
+        if (!aluno.plano_id || !aluno.valor_mensalidade || !aluno.dia_vencimento) {
+          erros++;
+          continue;
+        }
+
+        const diaVenc = Number(aluno.dia_vencimento || 10);
+        const ultimoDia = new Date(ano, mes, 0).getDate();
+        const diaFinal = Math.min(diaVenc, ultimoDia);
+        const dataVencimento = `${ano}-${String(mes).padStart(2, "0")}-${String(diaFinal).padStart(2, "0")}`;
+
+        const { error } = await client.from("mensalidades").insert({
+          aluno_id: aluno.id,
+          plano_id: aluno.plano_id,
+          descricao: "Mensalidade",
+          competencia_mes: mes,
+          competencia_ano: ano,
+          valor: Number(aluno.valor_mensalidade || 0),
+          data_vencimento: dataVencimento,
+          status: "Pendente"
+        });
+
+        if (error) {
+          console.error("Erro ao gerar mensalidade para", aluno.nome, error);
+          erros++;
+          continue;
+        }
+
+        criadas++;
+      }
+
+      await carregarBase();
+      filtrarMensalidades();
+
+      mostrarToast(
+        `Mensalidades geradas. Criadas: ${criadas}. Já existiam: ${ignoradas}. Erros: ${erros}.`,
+        erros ? "error" : "success"
+      );
     }
 
     function badgeStatusMensalidade(status) {
@@ -3095,7 +3262,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         </form>
       `;
 
-      abrirModal("Baixar mensalidade", "Ao baixar, a próxima mensalidade será gerada automaticamente", html, true);
+      abrirModal("Baixar mensalidade", "Confirme o pagamento desta mensalidade", html, true);
     }
 
     async function confirmarBaixaMensalidade(event, id) {
@@ -3135,7 +3302,6 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
         usuario_id: usuarioLogado.id
       });
 
-      await client.rpc("criar_proxima_mensalidade", { p_mensalidade_id: id });
 
       await registrarLog(m.aluno_id, "Mensalidades", "Pagamento", `Mensalidade paga via ${forma}.`);
 
@@ -3143,7 +3309,7 @@ function renderSessaoAlunoPublica(sessao, exercicios, aberto = false) {
       await atualizarMensalidadesVencidas();
       await carregarBase();
       await abrirTela(telaAtual);
-      mostrarToast("Pagamento registrado e próxima mensalidade gerada.");
+      mostrarToast("Pagamento registrado com sucesso.");
     }
 
     async function cancelarMensalidade(id) {
@@ -5531,230 +5697,229 @@ async function finalizarVenda() {
   );
  }
 
-   async function renderFinanceiro() {
-  if (!usuarioEhAdmin()) return;
+    async function renderFinanceiro() {
+      if (!usuarioEhAdmin()) return;
 
-  const hoje = new Date();
-  const ano = hoje.getFullYear();
-  const mes = String(hoje.getMonth() + 1).padStart(2, "0");
-  const primeiroDia = `${ano}-${mes}-01`;
+      const hoje = new Date();
+      const ano = hoje.getFullYear();
+      const mes = String(hoje.getMonth() + 1).padStart(2, "0");
+      const primeiroDia = `${ano}-${mes}-01`;
 
-  const { data: pagamentos, error: erroPagamentos } = await client
-    .from("pagamentos")
-    .select("*")
-    .gte("data_pagamento", primeiroDia)
-    .order("data_pagamento", { ascending: false });
+      const { data: pagamentos, error: erroPagamentos } = await client
+        .from("pagamentos")
+        .select("*")
+        .gte("data_pagamento", primeiroDia)
+        .order("data_pagamento", { ascending: false });
 
-  if (erroPagamentos) {
-    mostrarToast("Erro ao carregar pagamentos: " + erroPagamentos.message, "error");
-    return;
-  }
-
-  const { data: mensalidadesAbertas, error: erroMensalidades } = await client
-    .from("mensalidades")
-    .select("*")
-    .in("status", ["Pendente", "Vencido"]);
-
-  if (erroMensalidades) {
-    mostrarToast("Erro ao carregar mensalidades em aberto: " + erroMensalidades.message, "error");
-    return;
-  }
-
-  const { data: produtosAbertos, error: erroProdutosAbertos } = await client
-    .from("conta_aluno_lancamentos")
-    .select("*")
-    .eq("tipo", "Produto")
-    .eq("status", "Em Aberto");
-
-  if (erroProdutosAbertos) {
-    mostrarToast("Erro ao carregar produtos não pagos: " + erroProdutosAbertos.message, "error");
-    return;
-  }
-
-  const listaPagamentos = pagamentos || [];
-
-  const mensalidadesPagas = listaPagamentos
-    .filter(p => p.origem === "Mensalidade")
-    .reduce((s, p) => s + Number(p.valor || 0), 0);
-
-  const produtosPagos = listaPagamentos
-    .filter(p => p.origem === "Produto")
-    .reduce((s, p) => s + Number(p.valor || 0), 0);
-
-  const mensalidadesEmAberto = (mensalidadesAbertas || [])
-    .reduce((s, m) => s + Number(m.valor || 0), 0);
-
-  const produtosNaoPagos = (produtosAbertos || [])
-    .reduce((s, p) => s + Number(p.valor_total || 0), 0);
-
-  const totalRecebido = mensalidadesPagas + produtosPagos;
-  const totalEmAberto = mensalidadesEmAberto + produtosNaoPagos;
-
-  const html = `
-    <div class="cards">
-      <div class="card green">
-        <div class="kpi-label">Total recebido no mês</div>
-        <div class="kpi-value">${BRL.format(totalRecebido)}</div>
-      </div>
-
-      <div class="card">
-        <div class="kpi-label">Mensalidades pagas</div>
-        <div class="kpi-value">${BRL.format(mensalidadesPagas)}</div>
-      </div>
-
-      <div class="card">
-        <div class="kpi-label">Produtos pagos</div>
-        <div class="kpi-value">${BRL.format(produtosPagos)}</div>
-      </div>
-
-      <div class="card yellow">
-        <div class="kpi-label">Total em aberto</div>
-        <div class="kpi-value">${BRL.format(totalEmAberto)}</div>
-      </div>
-    </div>
-
-    <div class="cards">
-      <div class="card yellow">
-        <div class="kpi-label">Mensalidades em aberto</div>
-        <div class="kpi-value">${BRL.format(mensalidadesEmAberto)}</div>
-      </div>
-
-      <div class="card red">
-        <div class="kpi-label">Produtos não pagos</div>
-        <div class="kpi-value">${BRL.format(produtosNaoPagos)}</div>
-      </div>
-
-      <div class="card">
-        <div class="kpi-label">Qtd. mensalidades em aberto</div>
-        <div class="kpi-value">${(mensalidadesAbertas || []).length}</div>
-      </div>
-
-      <div class="card">
-        <div class="kpi-label">Qtd. produtos não pagos</div>
-        <div class="kpi-value">${(produtosAbertos || []).length}</div>
-      </div>
-    </div>
-
-    <div class="grid-2">
-      <div class="panel">
-        <div class="panel-header">
-          <div>
-            <h2>Separação financeira</h2>
-            <p>Resumo entre mensalidades e produtos</p>
-          </div>
-        </div>
-
-        <div class="debt-list">
-          <div class="debt-item">
-            <div>
-              <strong>Mensalidades pagas</strong>
-              <span>Mensalidades recebidas no mês atual</span>
-            </div>
-            <strong>${BRL.format(mensalidadesPagas)}</strong>
-          </div>
-
-          <div class="debt-item">
-            <div>
-              <strong>Mensalidades em aberto</strong>
-              <span>Mensalidades pendentes ou vencidas</span>
-            </div>
-            <strong>${BRL.format(mensalidadesEmAberto)}</strong>
-          </div>
-
-          <div class="debt-item">
-            <div>
-              <strong>Produtos pagos</strong>
-              <span>Vendas de produtos pagas na hora no mês atual</span>
-            </div>
-            <strong>${BRL.format(produtosPagos)}</strong>
-          </div>
-
-          <div class="debt-item">
-            <div>
-              <strong>Produtos não pagos</strong>
-              <span>Produtos anotados na conta do aluno e ainda em aberto</span>
-            </div>
-            <strong>${BRL.format(produtosNaoPagos)}</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="panel">
-        <div class="panel-header">
-          <div>
-            <h2>Produtos não pagos</h2>
-            <p>Produtos lançados na conta do aluno</p>
-          </div>
-        </div>
-
-        ${
-          produtosAbertos && produtosAbertos.length
-            ? `
-              <div class="debt-list">
-                ${produtosAbertos.slice(0, 8).map(p => `
-                  <div class="debt-item">
-                    <div>
-                      <strong>${p.descricao}</strong>
-                      <span>
-                        Qtd: ${p.quantidade || 1}
-                        ${p.data_lancamento ? " | Data: " + formatarData(p.data_lancamento) : ""}
-                      </span>
-                    </div>
-                    <strong>${BRL.format(Number(p.valor_total || 0))}</strong>
-                  </div>
-                `).join("")}
-              </div>
-            `
-            : `<div class="empty">Nenhum produto em aberto.</div>`
-        }
-      </div>
-    </div>
-
-    <div class="panel">
-      <div class="panel-header">
-        <div>
-          <h2>Pagamentos recebidos no mês</h2>
-          <p>Mensalidades e produtos pagos</p>
-        </div>
-      </div>
-
-      ${
-        listaPagamentos.length
-          ? `
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>Data</th>
-                    <th>Origem</th>
-                    <th>Descrição</th>
-                    <th>Forma</th>
-                    <th>Valor</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  ${listaPagamentos
-                    .filter(p => p.origem === "Mensalidade" || p.origem === "Produto")
-                    .map(p => `
-                      <tr>
-                        <td>${formatarData(p.data_pagamento)}</td>
-                        <td>${p.origem}</td>
-                        <td>${p.descricao || "-"}</td>
-                        <td>${p.forma_pagamento || "-"}</td>
-                        <td>${BRL.format(Number(p.valor || 0))}</td>
-                      </tr>
-                    `).join("")}
-                </tbody>
-              </table>
-            </div>
-          `
-          : `<div class="empty">Nenhum pagamento registrado neste mês.</div>`
+      if (erroPagamentos) {
+        mostrarToast("Erro ao carregar pagamentos: " + erroPagamentos.message, "error");
+        return;
       }
-    </div>
-  `;
 
-  document.getElementById("telaFinanceiro").innerHTML = html;
-}
+      const { data: mensalidadesAbertas, error: erroMensalidades } = await client
+        .from("mensalidades")
+        .select("*")
+        .in("status", ["Pendente", "Vencido"]);
+
+      if (erroMensalidades) {
+        mostrarToast("Erro ao carregar mensalidades em aberto: " + erroMensalidades.message, "error");
+        return;
+      }
+
+      const { data: produtosAbertos, error: erroProdutosAbertos } = await client
+        .from("conta_aluno_lancamentos")
+        .select("*")
+        .eq("tipo", "Produto")
+        .eq("status", "Em Aberto");
+
+      if (erroProdutosAbertos) {
+        mostrarToast("Erro ao carregar produtos não pagos: " + erroProdutosAbertos.message, "error");
+        return;
+      }
+
+      const listaPagamentos = pagamentos || [];
+
+      const mensalidadesPagas = listaPagamentos
+        .filter(p => p.origem === "Mensalidade")
+        .reduce((s, p) => s + Number(p.valor || 0), 0);
+
+      const produtosPagos = listaPagamentos
+        .filter(p => p.origem === "Produto")
+        .reduce((s, p) => s + Number(p.valor || 0), 0);
+
+      const mensalidadesEmAberto = (mensalidadesAbertas || [])
+        .reduce((s, m) => s + Number(m.valor || 0), 0);
+
+      const produtosNaoPagos = (produtosAbertos || [])
+        .reduce((s, p) => s + Number(p.valor_total || 0), 0);
+
+      const totalRecebido = mensalidadesPagas + produtosPagos;
+      const totalEmAberto = mensalidadesEmAberto + produtosNaoPagos;
+      const pagamentosFiltrados = listaPagamentos.filter(p => p.origem === "Mensalidade" || p.origem === "Produto");
+
+      const html = `
+        <div class="cards">
+          <div class="card green">
+            <div class="kpi-label">Total recebido no mês</div>
+            <div class="kpi-value">${BRL.format(totalRecebido)}</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Mensalidades pagas</div>
+            <div class="kpi-value">${BRL.format(mensalidadesPagas)}</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Produtos pagos</div>
+            <div class="kpi-value">${BRL.format(produtosPagos)}</div>
+          </div>
+
+          <div class="card yellow">
+            <div class="kpi-label">Total em aberto</div>
+            <div class="kpi-value">${BRL.format(totalEmAberto)}</div>
+          </div>
+        </div>
+
+        <div class="cards">
+          <div class="card yellow">
+            <div class="kpi-label">Mensalidades em aberto</div>
+            <div class="kpi-value">${BRL.format(mensalidadesEmAberto)}</div>
+          </div>
+
+          <div class="card red">
+            <div class="kpi-label">Produtos não pagos</div>
+            <div class="kpi-value">${BRL.format(produtosNaoPagos)}</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Qtd. mensalidades em aberto</div>
+            <div class="kpi-value">${(mensalidadesAbertas || []).length}</div>
+          </div>
+
+          <div class="card">
+            <div class="kpi-label">Qtd. produtos não pagos</div>
+            <div class="kpi-value">${(produtosAbertos || []).length}</div>
+          </div>
+        </div>
+
+        <div class="grid-2">
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Separação financeira</h2>
+                <p>Resumo entre mensalidades e produtos</p>
+              </div>
+            </div>
+
+            <div class="debt-list">
+              <div class="debt-item">
+                <div>
+                  <strong>Mensalidades pagas</strong>
+                  <span>Mensalidades recebidas no mês atual</span>
+                </div>
+                <strong>${BRL.format(mensalidadesPagas)}</strong>
+              </div>
+
+              <div class="debt-item">
+                <div>
+                  <strong>Mensalidades em aberto</strong>
+                  <span>Mensalidades pendentes ou vencidas</span>
+                </div>
+                <strong>${BRL.format(mensalidadesEmAberto)}</strong>
+              </div>
+
+              <div class="debt-item">
+                <div>
+                  <strong>Produtos pagos</strong>
+                  <span>Vendas de produtos pagas na hora no mês atual</span>
+                </div>
+                <strong>${BRL.format(produtosPagos)}</strong>
+              </div>
+
+              <div class="debt-item">
+                <div>
+                  <strong>Produtos não pagos</strong>
+                  <span>Produtos anotados na conta do aluno e ainda em aberto</span>
+                </div>
+                <strong>${BRL.format(produtosNaoPagos)}</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Produtos não pagos</h2>
+                <p>Produtos lançados na conta do aluno</p>
+              </div>
+            </div>
+
+            ${
+              produtosAbertos && produtosAbertos.length
+                ? `
+                  <div class="debt-list">
+                    ${produtosAbertos.slice(0, 8).map(p => `
+                      <div class="debt-item">
+                        <div>
+                          <strong>${p.descricao}</strong>
+                          <span>
+                            Qtd: ${p.quantidade || 1}
+                            ${p.data_lancamento ? " | Data: " + formatarData(p.data_lancamento) : ""}
+                          </span>
+                        </div>
+                        <strong>${BRL.format(Number(p.valor_total || 0))}</strong>
+                      </div>
+                    `).join("")}
+                  </div>
+                `
+                : `<div class="empty">Nenhum produto em aberto.</div>`
+            }
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Pagamentos recebidos no mês</h2>
+              <p>Mensalidades e produtos pagos</p>
+            </div>
+          </div>
+
+          ${
+            pagamentosFiltrados.length
+              ? `
+                <div class="table-wrap">
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Data</th>
+                        <th>Origem</th>
+                        <th>Descrição</th>
+                        <th>Forma</th>
+                        <th>Valor</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      ${pagamentosFiltrados.map(p => `
+                        <tr>
+                          <td>${formatarData(p.data_pagamento)}</td>
+                          <td>${p.origem}</td>
+                          <td>${p.descricao || "-"}</td>
+                          <td>${p.forma_pagamento || "-"}</td>
+                          <td>${BRL.format(Number(p.valor || 0))}</td>
+                        </tr>
+                      `).join("")}
+                    </tbody>
+                  </table>
+                </div>
+              `
+              : `<div class="empty">Nenhum pagamento de mensalidade ou produto registrado neste mês.</div>`
+          }
+        </div>
+      `;
+
+      document.getElementById("telaFinanceiro").innerHTML = html;
+    }
 
     async function renderPlanos() {
       await carregarBase();
