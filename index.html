@@ -1506,6 +1506,40 @@
   color: #fff;
 }
 
+    .venda-aluno-box {
+  display: grid;
+  gap: 8px;
+}
+
+.aluno-venda-selecionado {
+  background: rgba(255,255,255,.055);
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 14px;
+  padding: 11px 13px;
+  color: var(--muted);
+  font-size: 13px;
+  min-height: 47px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.aluno-venda-selecionado strong {
+  color: #fff;
+  font-size: 14px;
+  margin-bottom: 3px;
+}
+
+.aluno-venda-selecionado span {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.aluno-venda-selecionado.selecionado {
+  background: rgba(229,9,20,.12);
+  border-color: rgba(229,9,20,.35);
+}
+
   
     </style>
 </head>
@@ -4956,22 +4990,36 @@ async function renderVendas() {
             </select>
           </div>
 
-         <div class="form-group">
-  <label>Aluno</label>
+        <div class="form-group">
+  <label>Aluno / Cliente</label>
 
-  <input
-    id="buscaAlunoVenda"
-    placeholder="Pesquisar aluno por nome ou código..."
-    oninput="filtrarAlunosVenda()"
-    autocomplete="off"
-  >
+  <div class="venda-aluno-box">
+    <input
+      id="buscaAlunoVenda"
+      placeholder="Pesquisar aluno por nome, código ou telefone..."
+      oninput="filtrarAlunosVenda()"
+      autocomplete="off"
+    >
 
-  <div id="resultadoBuscaAlunoVenda" class="resultado-busca-aluno hidden"></div>
+    <div id="resultadoBuscaAlunoVenda" class="resultado-busca-aluno hidden"></div>
 
-  <select id="vendaAluno" style="margin-top:10px;">
-    <option value="">Cliente avulso / sem aluno</option>
-    ${alunoOptions}
-  </select>
+    <div id="alunoVendaSelecionado" class="aluno-venda-selecionado">
+      <span>Cliente avulso / sem aluno selecionado</span>
+    </div>
+
+    <button
+      type="button"
+      class="btn btn-small btn-ghost"
+      onclick="limparAlunoVenda()"
+    >
+      Limpar aluno
+    </button>
+
+    <select id="vendaAluno" class="hidden">
+      <option value="">Cliente avulso / sem aluno</option>
+      ${alunoOptions}
+    </select>
+  </div>
 </div>
 
           <div class="form-group">
@@ -5260,10 +5308,40 @@ function selecionarAlunoVenda(alunoId) {
 
   document.getElementById("vendaAluno").value = alunoId;
   document.getElementById("buscaAlunoVenda").value = aluno ? `${aluno.nome} - ${aluno.codigo || ""}` : "";
-  document.getElementById("vendaClienteAvulso").value = "";
+
+  const clienteAvulso = document.getElementById("vendaClienteAvulso");
+  if (clienteAvulso) clienteAvulso.value = "";
+
+  const boxSelecionado = document.getElementById("alunoVendaSelecionado");
+
+  if (boxSelecionado && aluno) {
+    boxSelecionado.innerHTML = `
+      <strong>${aluno.nome}</strong>
+      <span>${aluno.codigo || ""}${aluno.telefone ? " | " + aluno.telefone : ""}</span>
+    `;
+    boxSelecionado.classList.add("selecionado");
+  }
 
   document.getElementById("resultadoBuscaAlunoVenda").classList.add("hidden");
   document.getElementById("resultadoBuscaAlunoVenda").innerHTML = "";
+}
+
+    function limparAlunoVenda() {
+  document.getElementById("vendaAluno").value = "";
+  document.getElementById("buscaAlunoVenda").value = "";
+
+  const boxSelecionado = document.getElementById("alunoVendaSelecionado");
+
+  if (boxSelecionado) {
+    boxSelecionado.classList.remove("selecionado");
+    boxSelecionado.innerHTML = `<span>Cliente avulso / sem aluno selecionado</span>`;
+  }
+
+  const resultado = document.getElementById("resultadoBuscaAlunoVenda");
+  if (resultado) {
+    resultado.classList.add("hidden");
+    resultado.innerHTML = "";
+  }
 }
     
 async function finalizarVenda() {
