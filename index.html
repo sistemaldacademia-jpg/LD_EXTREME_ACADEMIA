@@ -4981,7 +4981,7 @@ async function renderVendas() {
           </div>
         </div>
 
-        <div class="form-grid">
+        <div class="form-grid venda-topo-grid">
           <div class="form-group">
             <label>Tipo de venda</label>
             <select id="vendaTipo" onchange="ajustarTipoVenda()">
@@ -4990,16 +4990,24 @@ async function renderVendas() {
             </select>
           </div>
 
-        <div class="form-group">
-  <label>Aluno / Cliente</label>
+          <div class="form-group">
+            <label>Aluno / Cliente</label>
+            <div class="venda-aluno-box">
+              <input
+                id="buscaAlunoVenda"
+                placeholder="Pesquisar aluno por nome, código ou telefone..."
+                oninput="filtrarAlunosVenda()"
+                autocomplete="off"
+              >
 
- 
- <select id="vendaAluno" class="hidden">
-      <option value="">Cliente avulso / sem aluno</option>
-      ${alunoOptions}
-    </select>
-  </div>
-</div>
+              <div id="resultadoBuscaAlunoVenda" class="resultado-busca-aluno hidden"></div>
+
+              <select id="vendaAluno" class="hidden">
+                <option value="">Cliente avulso / sem aluno</option>
+                ${alunoOptions}
+              </select>
+            </div>
+          </div>
 
           <div class="form-group">
             <label>Forma de pagamento</label>
@@ -5014,7 +5022,10 @@ async function renderVendas() {
 
           <div class="form-group span-3">
             <label>Cliente avulso</label>
-            <input id="vendaClienteAvulso" placeholder="Nome do cliente, caso não seja aluno cadastrado" />
+            <input
+              id="vendaClienteAvulso"
+              placeholder="Preencha somente se não for aluno cadastrado"
+            />
           </div>
         </div>
 
@@ -5024,14 +5035,14 @@ async function renderVendas() {
           <div class="form-group span-2">
             <label>Produto / código de barras</label>
             <input
-  id="vendaBuscaProduto"
-  placeholder="Digite nome ou passe o código de barras"
-  oninput="filtrarProdutosVenda()"
-  onkeydown="atalhoCodigoBarrasVenda(event)"
-  autocomplete="off"
-/>
+              id="vendaBuscaProduto"
+              placeholder="Digite nome ou passe o código de barras"
+              oninput="filtrarProdutosVenda()"
+              onkeydown="atalhoCodigoBarrasVenda(event)"
+              autocomplete="off"
+            />
 
-<div id="resultadoBuscaProdutoVenda" class="resultado-busca-aluno hidden"></div>
+            <div id="resultadoBuscaProdutoVenda" class="resultado-busca-aluno hidden"></div>
           </div>
 
           <div class="form-group">
@@ -5140,10 +5151,14 @@ function atalhoCodigoBarrasVenda(event) {
 }
 
 function filtrarProdutosVenda() {
-  const termo = document.getElementById("vendaBuscaProduto").value.trim().toLowerCase();
+  const input = document.getElementById("vendaBuscaProduto");
+  const termo = input.value.trim().toLowerCase();
   const box = document.getElementById("resultadoBuscaProdutoVenda");
 
   if (!box) return;
+
+  // Se o usuário voltou a digitar, remove a seleção anterior.
+  input.dataset.produtoId = "";
 
   if (!termo) {
     box.classList.add("hidden");
@@ -5184,7 +5199,9 @@ function selecionarProdutoVenda(produtoId) {
 
   if (!produto) return;
 
-  document.getElementById("vendaBuscaProduto").value = produto.nome;
+  const input = document.getElementById("vendaBuscaProduto");
+  input.value = produto.nome;
+  input.dataset.produtoId = produto.id;
 
   const box = document.getElementById("resultadoBuscaProdutoVenda");
   if (box) {
@@ -5217,10 +5234,14 @@ function encontrarProdutoVenda(texto) {
 }
 
 function adicionarProdutoVenda() {
-  const busca = document.getElementById("vendaBuscaProduto").value.trim();
+  const inputBusca = document.getElementById("vendaBuscaProduto");
+  const busca = inputBusca.value.trim();
+  const produtoSelecionadoId = inputBusca.dataset.produtoId || "";
   const qtd = Number(document.getElementById("vendaQtdProduto").value || 1);
 
-  const produto = encontrarProdutoVenda(busca);
+  const produto = produtoSelecionadoId
+    ? produtosCache.find(p => p.id === produtoSelecionadoId && p.ativo !== false)
+    : encontrarProdutoVenda(busca);
 
   if (!produto) {
     mostrarToast("Produto não encontrado.", "error");
@@ -5261,6 +5282,7 @@ function adicionarProdutoVenda() {
   }
 
   document.getElementById("vendaBuscaProduto").value = "";
+  document.getElementById("vendaBuscaProduto").dataset.produtoId = "";
   document.getElementById("vendaQtdProduto").value = 1;
   renderCarrinhoVenda();
   mostrarToast("Produto adicionado.");
