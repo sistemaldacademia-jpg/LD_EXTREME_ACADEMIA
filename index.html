@@ -4956,13 +4956,23 @@ async function renderVendas() {
             </select>
           </div>
 
-          <div class="form-group">
-            <label>Aluno</label>
-            <select id="vendaAluno">
-              <option value="">Cliente avulso / sem aluno</option>
-              ${alunoOptions}
-            </select>
-          </div>
+         <div class="form-group">
+  <label>Aluno</label>
+
+  <input
+    id="buscaAlunoVenda"
+    placeholder="Pesquisar aluno por nome ou código..."
+    oninput="filtrarAlunosVenda()"
+    autocomplete="off"
+  >
+
+  <div id="resultadoBuscaAlunoVenda" class="resultado-busca-aluno hidden"></div>
+
+  <select id="vendaAluno" style="margin-top:10px;">
+    <option value="">Cliente avulso / sem aluno</option>
+    ${alunoOptions}
+  </select>
+</div>
 
           <div class="form-group">
             <label>Forma de pagamento</label>
@@ -5210,6 +5220,52 @@ function limparCarrinhoVenda() {
   renderCarrinhoVenda();
 }
 
+function filtrarAlunosVenda() {
+  const termo = document.getElementById("buscaAlunoVenda").value.trim().toLowerCase();
+  const box = document.getElementById("resultadoBuscaAlunoVenda");
+
+  if (!termo) {
+    box.classList.add("hidden");
+    box.innerHTML = "";
+    return;
+  }
+
+  const encontrados = alunosCache
+    .filter(a => a.ativo)
+    .filter(a =>
+      String(a.nome || "").toLowerCase().includes(termo) ||
+      String(a.codigo || "").toLowerCase().includes(termo) ||
+      String(a.telefone || "").toLowerCase().includes(termo)
+    )
+    .slice(0, 8);
+
+  if (!encontrados.length) {
+    box.classList.remove("hidden");
+    box.innerHTML = `<div class="busca-aluno-vazio">Nenhum aluno encontrado.</div>`;
+    return;
+  }
+
+  box.classList.remove("hidden");
+
+  box.innerHTML = encontrados.map(a => `
+    <button type="button" class="busca-aluno-item" onclick="selecionarAlunoVenda('${a.id}')">
+      <strong>${a.nome}</strong>
+      <span>${a.codigo || ""} ${a.telefone ? " | " + a.telefone : ""}</span>
+    </button>
+  `).join("");
+}
+
+function selecionarAlunoVenda(alunoId) {
+  const aluno = alunosCache.find(a => a.id === alunoId);
+
+  document.getElementById("vendaAluno").value = alunoId;
+  document.getElementById("buscaAlunoVenda").value = aluno ? `${aluno.nome} - ${aluno.codigo || ""}` : "";
+  document.getElementById("vendaClienteAvulso").value = "";
+
+  document.getElementById("resultadoBuscaAlunoVenda").classList.add("hidden");
+  document.getElementById("resultadoBuscaAlunoVenda").innerHTML = "";
+}
+    
 async function finalizarVenda() {
   const tipo = document.getElementById("vendaTipo").value;
   const alunoId = document.getElementById("vendaAluno").value || null;
